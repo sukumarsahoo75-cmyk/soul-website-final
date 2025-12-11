@@ -52,7 +52,7 @@ const Home = () => {
               Luxury Redefined
             </h2>
             <h1 className="text-5xl md:text-7xl font-serif text-white mb-8 leading-tight">
-              Essence of <br/> <span className="italic text-yellow-500">Who You Are</span>
+              Wear your  <br/> <span className="italic text-yellow-500">Soul</span>
             </h1>
             <Link 
               to="/all-products" 
