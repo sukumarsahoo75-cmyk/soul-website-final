@@ -1,0 +1,30 @@
+import React from 'react';
+import Layout from '../components/Layout';
+import { products } from '../data'; // Load your master list
+import { Link } from 'react-router-dom';
+
+const Unisex = () => {
+  // Filter only the unisex items
+  const unisexProducts = products.filter(p => p.category === 'unisex');
+
+  return (
+    <Layout>
+      <div className="bg-gray-900 min-h-screen py-10 px-4">
+        <h1 className="text-4xl text-center text-gold-500 mb-8 font-serif">Unisex Collection</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          {unisexProducts.map(product => (
+            <Link key={product.id} to={`/product/${product.id}`}>
+              <div className="bg-gray-800 rounded-lg p-4 hover:shadow-gold transition">
+                <img src={product.image} alt={product.name} className="w-full h-64 object-cover rounded mb-4"/>
+                <h3 className="text-xl text-gold-400 font-bold">{product.name}</h3>
+                <p className="text-gray-300">₹{product.price}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default Unisex;

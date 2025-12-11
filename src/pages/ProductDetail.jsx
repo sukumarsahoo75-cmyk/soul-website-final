@@ -1,176 +1,176 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { db } from '../firebase';
-import { collection, addDoc, query, where, getDocs, serverTimestamp, orderBy } from 'firebase/firestore';
+import { products } from '../data'; 
 
-// A simple component for displaying star ratings
 const StarRating = ({ rating }) => {
   return (
-    <div className="flex">
-      {[...Array(5)].map((_, index) => (
-        <svg
-          key={index}
-          className={`w-5 h-5 ${index < rating ? 'text-yellow-400' : 'text-gray-600'}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.164c.969 0 1.371 1.24.588 1.81l-3.368 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.368-2.448a1 1 0 00-1.176 0l-3.368 2.448c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.164a1 1 0 00.95-.69L9.049 2.927z" />
-        </svg>
+    <div className="flex text-yellow-500 text-sm">
+      {[...Array(5)].map((_, i) => (
+        <span key={i}>{i < Math.floor(rating) ? "★" : "☆"}</span>
       ))}
     </div>
   );
 };
 
-
 const ProductDetail = () => {
   const { id } = useParams();
-  const { currentUser } = useAuth();
   const { dispatch } = useCart();
-
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  
-  // State for reviews
-  const [reviews, setReviews] = useState([]);
-  const [loadingReviews, setLoadingReviews] = useState(true);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
-  const [reviewError, setReviewError] = useState('');
+  const [activeTab, setActiveTab] = useState('details');
 
-  // Your complete product data
-  const allProducts = {
-    1: { id: 1, name: "Mystic", description: "A captivating unisex fragrance with citrus and amber notes.", longDescription: "Mystic is a captivating unisex fragrance that opens with bright citrus notes of bergamot, lemon and orange revealing a heart of delicate Saffron, Jasmine and Amber. Perfect for daytime wear, it leaves a subtle, memorable trail that works beautifully for both men and women.", price: 599, images: ["/product1.jpg","/product1.jpg","/product1.jpg"], features: ["Long-lasting 8+ hours","Natural essential oils","Alcohol-free formula","Cruelty-free","Unisex fragrance"], notes: { top: ["Bergamot", "Mandarin", "Lemon Zest"], middle: ["Saffron", "Amberwood", "Ambergris"], base: ["Cedar", "Oakmoss"] }, category: "unisex" },
-    2: { id: 2, name: "Blu", description: "A bold and masculine aquatic fragrance inspired by the Mediterranean.", longDescription: "Blu is a bold and masculine fragrance that captures the alluring essence of the Mediterranean. Its powerful aquatic heart is invigorated by zesty bursts of bergamot and grapefruit, while rare saffron adds a touch of spice. A rich, musky base rounds out the scent, creating a captivating and sophisticated aroma.", price: 499, images: ["/product2.jpg","/product2.jpg","/product2.jpg"], features: ["Long-lasting 10+ hours","Aquatic aromatic profile","Natural ingredients","Cruelty-free"], notes: { top: ["Calabrian Bergamot", "Water Notes", "Grapefruit", "Fig Leaf"], middle: ["Violet leaves", "Patchouli", "Papyrus", "Black Pepper", "Ambroxan"], base: ["Musk", "Tonka Beans", "Saffron", "Frankincense"] }, category: "for-him" },
-    3: { id: 3, name: "Oud Intense", description: "A powerful unisex Oriental Woody fragrance with exotic spices.", longDescription: "Oud Intense is a powerful unisex Oriental Woody fragrance that celebrates the rich heritage of oud. With deep woody notes complemented by exotic spices, this scent makes a bold statement while maintaining an air of sophistication suitable for both men and women.", price: 599, images: ["/product3.jpg","/product3.jpg","/product3.jpg"], features: ["Long-lasting 8+ hours","Premium oud composition","Concentrated formula","Cruelty-free","Unisex fragrance"], notes: { top: ["Cardamom", "Pink Pepper", "Rosewood"], middle: ["Sandalwood", "Agarwood", "Vetiver"], base: ["Vanilla", "Tonka Bean", "Amber"] }, category: "unisex" },
-    4: { id: 4, name: "Her", description: "A radiant and empowering fragrance blending softness with strength.", longDescription: "Her is a radiant and empowering fragrance crafted for the woman who blends softness with strength. It opens with a delicate veil of powdery musk, kissed by sparkling citrus notes of bergamot and grapefruit, creating a fresh yet sophisticated first impression. As the scent unfolds, a heart of rose and patchouli adds depth and allure, while smoky pineapple and oakmoss from Creed Aventus lend a bold, modern twist. The base settles into warm amber and woods, leaving a trail that's both sensual and unforgettable.", price: 499, images: ["/product4.jpg","/product4.jpg","/product4.jpg"], features: ["Long-lasting 8+ hours","Floral woody musk","Natural extracts","Cruelty-free"], notes: { top: ["Powdery musk", "Bergamot", "Lemon"], middle: ["Rose", "Patchouli", "Smoky Pineapple"], base: ["Amber", "Oakmoss", "Soft Woods"] }, category: "for-her" },
-    5: { id: 5, name: "Luxury Perfume Gift Set - 4 x 20ml", description: "The perfect fragrance collection featuring our four signature scents.", longDescription: "Experience the complete SOUL fragrance journey with our exquisite Luxury Perfume Gift Set. This carefully curated collection includes all four of our signature scents in elegant 20ml bottles, beautifully presented in premium gift packaging. Perfect for discovering your favorite fragrance or as an unforgettable gift for someone special. From the captivating Mystic to the bold Oud Intense, the aquatic Blu to the radiant Her - this set offers a complete olfactory experience for every mood and occasion.", price: 699, images: ["/product5.jpg","/product5.jpg","/product5.jpg"], features: ["4 different fragrances","20ml each bottle","Premium gift packaging","Perfect for travel","Ideal for gifting","Discover your signature scent"], category: "gift-sets" }
-  };
+  const product = products.find(p => p.id === parseInt(id));
 
-  useEffect(() => {
-    const currentProduct = allProducts[id];
-    setProduct(currentProduct);
-    setLoading(false);
-
-    const fetchReviews = async () => {
-      if (!currentProduct) return;
-      setLoadingReviews(true);
-      try {
-        const reviewsRef = collection(db, "reviews");
-        const q = query(reviewsRef, where("productId", "==", id), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        const fetchedReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setReviews(fetchedReviews);
-      } catch (error) { console.error("Error fetching reviews: ", error); }
-      setLoadingReviews(false);
-    };
-
-    fetchReviews();
-    window.scrollTo(0, 0);
-  }, [id]);
-
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
-    if (rating === 0) { return setReviewError("Please select a star rating."); }
-    setReviewError('');
-    
-    const newReview = { productId: id, userId: currentUser.uid, userEmail: currentUser.email, rating, comment, createdAt: serverTimestamp() };
-
-    try {
-      const docRef = await addDoc(collection(db, "reviews"), newReview);
-      setReviews([{ ...newReview, id: docRef.id, userEmail: currentUser.email }, ...reviews]);
-      setComment(''); setRating(0);
-    } catch (error) {
-      console.error("Error adding review: ", error);
-      setReviewError("Failed to submit review. Please try again.");
-    }
-  };
+  if (!product) return <Layout><div className="text-center p-20 text-white">Product Not Found</div></Layout>;
 
   const addToCart = () => {
-    dispatch({ type: 'ADD_ITEM', payload: { ...product, quantity: quantity } });
-    alert(`Added ${quantity} of ${product.name} to cart!`);
+    dispatch({ 
+      type: 'ADD_ITEM', 
+      payload: { ...product, quantity, selectedSize: "50ml", price: product.price } 
+    });
+    alert(`Added ${quantity} x ${product.name} to cart!`);
   };
-
-  const formatIndianRupees = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
-
-  if (loading) { return <Layout><div className="text-center p-10">Loading...</div></Layout>; }
-  if (!product) { return ( <Layout> <section className="py-16 bg-gray-900 min-h-screen"> <div className="container mx-auto px-4 text-center"> <h1 className="text-3xl text-gold-500 mb-4">Product Not Found</h1> <p className="text-gray-300 mb-6">The product you're looking for doesn't exist.</p> <Link to="/all-products" className="text-gold-300 hover:text-gold-500 font-sans">Back to All Products</Link> </div> </section> </Layout> ); }
 
   return (
     <Layout>
-      <section className="py-16 bg-gray-900 min-h-screen">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <nav className="flex mb-8 text-sm font-sans">
-              <Link to="/" className="text-gold-500 hover:text-gold-300">Home</Link>
-              <span className="mx-2 text-gray-500">/</span>
-              <Link to="/all-products" className="text-gold-500 hover:text-gold-300">All Products</Link>
-              <span className="mx-2 text-gray-500">/</span>
-              <span className="text-gray-300">{product.name}</span>
-            </nav>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div>
-                <div className="bg-gray-800 rounded-xl p-4 mb-4"><img src={product.images[selectedImage]} alt={product.name} className="w-full h-96 object-cover rounded-lg"/></div>
-                <div className="flex space-x-4">
-                  {product.images.map((image, index) => (<button key={index} onClick={() => setSelectedImage(index)} className={`bg-gray-800 rounded-lg p-2 border-2 transition-all ${selectedImage === index ? 'border-gold-500' : 'border-transparent hover:border-gold-300'}`}><img src={image} alt={`${product.name} view ${index + 1}`} className="w-16 h-16 object-cover rounded"/></button>))}
+      <section className="py-12 bg-black min-h-screen text-white font-sans">
+        <div className="container mx-auto px-4 max-w-6xl">
+          
+          {/* TOP SECTION */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+            <div className="bg-gray-900 p-8 rounded-xl border border-gray-800 flex items-center justify-center relative">
+              <img src={product.image} alt={product.name} className={`w-full max-w-md h-auto rounded shadow-2xl transition duration-500 ${!product.inStock && 'grayscale opacity-50'}`}/>
+              
+              {/* OUT OF STOCK OVERLAY */}
+              {!product.inStock && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="bg-red-600 text-white font-bold px-6 py-2 text-xl rounded uppercase tracking-widest shadow-xl">
+                    Out of Stock
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-yellow-500 tracking-widest text-xs uppercase font-bold border border-yellow-500 px-2 py-1 rounded">
+                  {product.category.replace('-', ' ')}
+                </span>
+                <div className="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-full">
+                  <StarRating rating={product.rating} />
+                  <span className="text-xs text-gray-400">({product.reviews.length} Reviews)</span>
                 </div>
               </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gold-500 mb-4">{product.name}</h1>
-                <p className="text-2xl font-semibold text-gold-400 mb-6">{formatIndianRupees(product.price)}</p>
-                <p className="text-gray-300 mb-6 leading-relaxed font-sans">{product.longDescription}</p>
-                {product.id === 5 && ( <div className="mb-6"> <h3 className="text-xl font-semibold text-gold-400 mb-3">What's Included</h3> <ul className="text-gray-300 space-y-2 font-sans"> <li className="flex items-center"><span className="text-gold-500 mr-2">•</span>Mystic 20ml</li> <li className="flex items-center"><span className="text-gold-500 mr-2">•</span>Blu 20ml</li> <li className="flex items-center"><span className="text-gold-500 mr-2">•</span>Oud Intense 20ml</li> <li className="flex items-center"><span className="text-gold-500 mr-2">•</span>Her 20ml</li> <li className="flex items-center"><span className="text-gold-500 mr-2">•</span>Elegant Gift Box</li> <li className="flex items-center"><span className="text-gold-500 mr-2">•</span>Care Instructions</li> </ul> </div> )}
-                <div className="flex items-center mb-6">
-                  <span className="text-gray-300 mr-4 font-sans">Quantity:</span>
-                  <div className="flex items-center border border-gray-600 rounded">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-1 text-gold-500 hover:bg-gray-700 transition">-</button>
-                    <span className="px-4 py-1 text-gray-300 font-sans">{quantity}</span>
-                    <button onClick={() => setQuantity(quantity + 1)} className="px-3 py-1 text-gold-500 hover:bg-gray-700 transition">+</button>
-                  </div>
+
+              <h1 className="text-5xl font-serif text-white mb-4">{product.name}</h1>
+              <p className="text-gray-400 mb-6 text-lg leading-relaxed italic border-l-2 border-yellow-500 pl-4">
+                "{product.inspiration}"
+              </p>
+              
+              <div className="mb-8 bg-gray-900 p-4 rounded-lg border border-gray-800">
+                <p className="text-gray-300 text-sm mb-2">{product.description}</p>
+                <div className="flex items-baseline space-x-2 mt-4">
+                  <p className="text-4xl text-yellow-500 font-bold">₹{product.price}</p>
+                  <p className="text-gray-500 text-sm">/ 50ml</p>
                 </div>
-                <button onClick={addToCart} className="w-full bg-gold-600 text-black font-semibold py-3 rounded-lg hover:bg-gold-500 transition mb-6 font-sans">Add to Cart - {formatIndianRupees(product.price * quantity)}</button>
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-gold-400 mb-3">Features</h3>
-                  <ul className="text-gray-300 space-y-2 font-sans">
-                    {product.features.map((feature, index) => (<li key={index} className="flex items-center"><span className="text-gold-500 mr-2">•</span>{feature}</li>))}
-                  </ul>
-                </div>
-                {product.notes && product.id !== 5 && ( <div> <h3 className="text-xl font-semibold text-gold-400 mb-3">Fragrance Notes</h3> <div className="grid grid-cols-3 gap-4 text-sm"> <div> <h4 className="text-gold-500 font-semibold mb-2">Top Notes</h4> <p className="text-gray-300 font-sans">{product.notes.top.join(', ')}</p> </div> <div> <h4 className="text-gold-500 font-semibold mb-2">Middle Notes</h4> <p className="text-gray-300 font-sans">{product.notes.middle.join(', ')}</p> </div> <div> <h4 className="text-gold-500 font-semibold mb-2">Base Notes</h4> <p className="text-gray-300 font-sans">{product.notes.base.join(', ')}</p> </div> </div> </div> )}
+              </div>
+
+              {/* ACTION AREA */}
+              <div className="flex space-x-4 h-14">
+                 <div className="flex items-center border border-gray-700 rounded bg-black">
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-l" disabled={!product.inStock}>-</button>
+                    <span className="px-5 text-white font-bold text-lg">{quantity}</span>
+                    <button onClick={() => setQuantity(quantity + 1)} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-r" disabled={!product.inStock}>+</button>
+                 </div>
+                 
+                 {/* BUTTON LOGIC */}
+                 {product.inStock ? (
+                   <button onClick={addToCart} className="flex-1 bg-yellow-500 text-black font-bold uppercase tracking-widest text-lg rounded hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)]">
+                     Add to Cart
+                   </button>
+                 ) : (
+                   <button disabled className="flex-1 bg-gray-700 text-gray-400 font-bold uppercase tracking-widest text-lg rounded cursor-not-allowed">
+                     Sold Out
+                   </button>
+                 )}
               </div>
             </div>
           </div>
-          
-          <div className="max-w-6xl mx-auto mt-12">
-            <h2 className="text-3xl font-bold text-gold-400 mb-6 border-b border-gray-700 pb-2">Reviews & Ratings</h2>
-            {currentUser ? (
-              <form onSubmit={handleSubmitReview} className="bg-gray-800 p-6 rounded-lg mb-8">
-                <h3 className="text-xl text-gold-500 mb-4">Write a Review</h3>
-                {reviewError && <p className="text-red-400 mb-4">{reviewError}</p>}
-                <div className="mb-4">
-                  <label className="block text-gray-300 mb-2">Your Rating</label>
-                  <div className="flex space-x-1">
-                    {[...Array(5)].map((_, index) => {
-                      const ratingValue = index + 1;
-                      return (<button type="button" key={ratingValue} onClick={() => setRating(ratingValue)}><svg className={`w-8 h-8 ${ratingValue <= rating ? 'text-yellow-400' : 'text-gray-600'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.164c.969 0 1.371 1.24.588 1.81l-3.368 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.368-2.448a1 1 0 00-1.176 0l-3.368 2.448c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.164a1 1 0 00.95-.69L9.049 2.927z" /></svg></button>);
-                    })}
+
+          {/* BOTTOM SECTION: TABS */}
+          <div className="border-t border-gray-800 pt-10">
+            <div className="flex justify-center space-x-8 mb-10 border-b border-gray-800 pb-4">
+              <button onClick={() => setActiveTab('details')} className={`text-lg uppercase tracking-widest pb-2 ${activeTab === 'details' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-gray-500 hover:text-white'}`}>Olfactory Notes & Specs</button>
+              <button onClick={() => setActiveTab('reviews')} className={`text-lg uppercase tracking-widest pb-2 ${activeTab === 'reviews' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-gray-500 hover:text-white'}`}>Customer Reviews</button>
+            </div>
+
+            {/* TAB CONTENT: DETAILS */}
+            {activeTab === 'details' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 animate-fade-in">
+                {/* NOTES */}
+                <div>
+                  <h3 className="text-2xl font-serif text-white mb-6">Fragrance Pyramid</h3>
+                  <div className="space-y-6">
+                    <div className="bg-gray-900 p-4 rounded border-l-4 border-yellow-500">
+                      <span className="block text-xs text-gray-500 uppercase tracking-widest mb-1">Top Notes</span>
+                      <p className="text-white text-lg">{product.notes.top}</p>
+                    </div>
+                    <div className="bg-gray-900 p-4 rounded border-l-4 border-yellow-600">
+                      <span className="block text-xs text-gray-500 uppercase tracking-widest mb-1">Heart Notes</span>
+                      <p className="text-white text-lg">{product.notes.mid}</p>
+                    </div>
+                    <div className="bg-gray-900 p-4 rounded border-l-4 border-yellow-700">
+                      <span className="block text-xs text-gray-500 uppercase tracking-widest mb-1">Base Notes</span>
+                      <p className="text-white text-lg">{product.notes.base}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <label htmlFor="comment" className="block text-gray-300 mb-2">Your Review</label>
-                  <textarea id="comment" value={comment} onChange={(e) => setComment(e.target.value)} rows="4" className="w-full p-2 bg-gray-700 rounded text-gray-200 focus:outline-none focus:border-gold-500" placeholder="Tell us what you think..."></textarea>
+
+                {/* SPECS */}
+                <div>
+                  <h3 className="text-2xl font-serif text-white mb-6">Performance</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-900 p-4 rounded text-center">
+                      <span className="block text-gray-500 text-xs uppercase mb-2">Ideal Weather</span>
+                      <p className="text-yellow-500 font-bold">{product.specs.weather}</p>
+                    </div>
+                    <div className="bg-gray-900 p-4 rounded text-center">
+                      <span className="block text-gray-500 text-xs uppercase mb-2">Occasion</span>
+                      <p className="text-yellow-500 font-bold">{product.specs.time}</p>
+                    </div>
+                    <div className="bg-gray-900 p-4 rounded text-center">
+                      <span className="block text-gray-500 text-xs uppercase mb-2">Longevity</span>
+                      <p className="text-white">{product.specs.longevity}</p>
+                    </div>
+                    <div className="bg-gray-900 p-4 rounded text-center">
+                      <span className="block text-gray-500 text-xs uppercase mb-2">Projection</span>
+                      <p className="text-white">{product.specs.projection}</p>
+                    </div>
+                  </div>
                 </div>
-                <button type="submit" className="bg-gold-600 text-black font-semibold px-6 py-2 rounded-lg hover:bg-gold-500 transition">Submit Review</button>
-              </form>
-            ) : (<p className="text-gray-400 mb-8">You must be <Link to="/login" className="text-gold-500 hover:underline">logged in</Link> to write a review.</p>)}
-            {loadingReviews ? (<p className="text-gray-400">Loading reviews...</p>) : reviews.length > 0 ? (
-              <div className="space-y-6">
-                {reviews.map(review => (<div key={review.id} className="bg-gray-800 p-4 rounded-lg"><StarRating rating={review.rating} /><p className="text-gray-300 my-2">{review.comment}</p><small className="text-gray-500">by {review.userEmail}</small></div>))}
               </div>
-            ) : (<p className="text-gray-400">Be the first to review this product!</p>)}
+            )}
+
+            {/* TAB CONTENT: REVIEWS */}
+            {activeTab === 'reviews' && (
+              <div className="max-w-3xl mx-auto space-y-6">
+                {product.reviews.length === 0 ? (
+                    <div className="text-center text-gray-500">No reviews yet. Be the first!</div>
+                ) : (
+                    product.reviews.map((review, index) => (
+                    <div key={index} className="bg-gray-900 p-6 rounded border border-gray-800">
+                        <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-bold text-white">{review.user}</h4>
+                        <StarRating rating={review.rating} />
+                        </div>
+                        <p className="text-gray-300">"{review.text}"</p>
+                    </div>
+                    ))
+                )}
+              </div>
+            )}
+
           </div>
         </div>
       </section>

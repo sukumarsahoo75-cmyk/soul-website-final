@@ -1,33 +1,63 @@
 import React from 'react';
 import Layout from '../components/Layout';
+import { Link } from 'react-router-dom';
 
 const OurStory = () => {
   return (
     <Layout>
-      <section className="py-16 bg-gray-900 min-h-screen">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold text-gold-500 text-center mb-8">Our Story</h1>
-            
-            <div className="bg-gray-800 rounded-xl p-8 border border-gold-500/30">
-              <div className="prose prose-lg prose-invert max-w-none">
-                <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                  Founded in 2020, SOUL emerged from a simple belief: every individual deserves a signature scent that resonates with their essence. 
-                </p>
-                
-                <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                  Our journey began in the heart of Mumbai, where master perfumers and dreamers came together to create fragrances that tell stories. Each bottle contains not just perfume, but memories, emotions, and the very soul of its wearer.
-                </p>
-
-                <h2 className="text-2xl font-semibold text-gold-400 mt-8 mb-4">Our Philosophy</h2>
-                <p className="text-gray-300 text-lg leading-relaxed">
-                  We believe in sustainable luxury, ethical sourcing, and creating products that stand the test of time. Every ingredient is carefully selected, every bottle thoughtfully designed, and every customer treated like family.
-                </p>
-              </div>
-            </div>
-          </div>
+      <div className="bg-black min-h-screen text-white py-20 px-4 font-sans">
+        
+        {/* HERO HEADER */}
+        <div className="container mx-auto max-w-4xl text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-serif text-yellow-500 mb-6 tracking-wide">
+            The Soul of Scent
+          </h1>
+          <div className="w-24 h-1 bg-yellow-500 mx-auto opacity-80"></div>
         </div>
-      </section>
+
+        {/* MAIN CONTENT */}
+        <div className="container mx-auto max-w-3xl space-y-12 leading-relaxed text-gray-300 text-lg text-center md:text-left">
+          
+          {/* Section 1: The Beginning */}
+          <section>
+            <p className="first-letter:text-5xl first-letter:text-yellow-500 first-letter:font-serif first-letter:float-left first-letter:mr-3">
+              It began not as a business, but as an obsession. For our founder, the world was always experienced through fragrance. From the earliest memories, there was a deep, intuitive connection to the power of scent—how a single note could unlock a memory, shift a mood, or define a moment.
+            </p>
+          </section>
+
+          {/* Section 2: The Vision (2025) */}
+          <section className="flex flex-col md:flex-row items-center gap-8 border-y border-gray-800 py-10 my-10">
+            <div className="flex-1">
+              <h2 className="text-3xl font-serif text-white mb-4">Born in 2025</h2>
+              <p>
+                As exposure to the world’s finest olfactory masterpieces grew, so did the dream. Being an enthusiast was no longer enough. In 2025, that lifelong passion evolved into a singular purpose: to establish <strong>SOUL Fragrance</strong>, a proud Indian perfume house with a global vision.
+              </p>
+            </div>
+          </section>
+
+          {/* Section 3: The Future (Fusion & Niche) */}
+          <section>
+            <p className="mb-6">
+              Today, we specialize in crafting luxury-inspired perfumes that make opulence accessible. But we are already moving beyond the familiar.
+            </p>
+            <p className="text-yellow-100 italic font-serif text-xl border-l-4 border-yellow-500 pl-6 py-2">
+              "We are on the verge of a new era—creating our own niche fragrances and fusion scents that blend the richness of Indian heritage with modern global elegance."
+            </p>
+            <p className="mt-6">
+              This is just the beginning of our olfactory journey. We invite you to find the scent that speaks to your soul.
+            </p>
+          </section>
+
+          {/* SIGNATURE */}
+          <div className="pt-10 text-center">
+            <img src="/logo.png" alt="Soul Logo" className="h-16 mx-auto opacity-50 mb-4" />
+            <Link to="/all-products" className="inline-block border border-yellow-500 text-yellow-500 px-8 py-3 rounded hover:bg-yellow-500 hover:text-black transition uppercase tracking-widest font-bold">
+              Explore Our Collection
+            </Link>
+          </div>
+
+        </div>
+      </div>
     </Layout>
   );
 };

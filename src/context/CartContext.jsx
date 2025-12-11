@@ -1,82 +1,55 @@
-import React, { createContext, useReducer, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
-const initialState = {
-    items: [],
-};
+const CartContext = createContext();
 
 const cartReducer = (state, action) => {
-    switch (action.type) {
-        case 'ADD_ITEM': {
-            const { id, quantity } = action.payload;
-            const existingItemIndex = state.items.findIndex(item => item.id === id);
+  switch (action.type) {
+    case 'ADD_ITEM':
+      // Check if item already exists
+      const existingItem = state.find(item => item.id === action.payload.id);
+      if (existingItem) {
+        return state.map(item =>
+          item.id === action.payload.id
+            ? { ...item, quantity: item.quantity + action.payload.quantity }
+            : item
+        );
+      }
+      return [...state, action.payload];
 
-            if (existingItemIndex > -1) {
-                const updatedItems = [...state.items];
-                updatedItems[existingItemIndex].quantity += quantity;
-                return { ...state, items: updatedItems };
-            } else {
-                return { ...state, items: [...state.items, action.payload] };
-            }
-        }
-        case 'REMOVE_ITEM': {
-            return {
-                ...state,
-                items: state.items.filter(item => item.id !== action.payload.id),
-            };
-        }
-        case 'UPDATE_QUANTITY': {
-             const updatedItems = state.items.map(item =>
-                item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
-            ).filter(item => item.quantity > 0);
-            return { ...state, items: updatedItems };
-        }
-        case 'LOAD_CART': {
-            if (action.payload && Array.isArray(action.payload.items)) {
-                return action.payload;
-            }
-            return initialState;
-        }
-        default:
-            return state;
-    }
+    case 'REMOVE_ITEM':
+      return state.filter(item => item.id !== action.payload.id);
+
+    case 'UPDATE_QUANTITY':
+      return state.map(item =>
+        item.id === action.payload.id
+          ? { ...item, quantity: Math.max(1, action.payload.quantity) } // Prevent going below 1
+          : item
+      );
+
+    case 'CLEAR_CART':
+      return [];
+
+    default:
+      return state;
+  }
 };
-
-export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-    const [state, dispatch] = useReducer(cartReducer, initialState);
+  // Load cart from localStorage so items stay after refresh
+  const [cart, dispatch] = useReducer(cartReducer, [], () => {
+    const localData = localStorage.getItem('soulCart');
+    return localData ? JSON.parse(localData) : [];
+  });
 
-    // Load cart from localStorage on initial render
-    useEffect(() => {
-        try {
-            const savedCart = localStorage.getItem('perfumeCart');
-            if (savedCart) {
-                dispatch({ type: 'LOAD_CART', payload: JSON.parse(savedCart) });
-            }
-        } catch (error) {
-            console.error("Failed to load cart from localStorage", error);
-        }
-    }, []);
+  useEffect(() => {
+    localStorage.setItem('soulCart', JSON.stringify(cart));
+  }, [cart]);
 
-    // Save cart to localStorage whenever it changes
-    useEffect(() => {
-        try {
-            // This check prevents overwriting the loaded cart on the initial render
-            if (state !== initialState) {
-                localStorage.setItem('perfumeCart', JSON.stringify(state));
-            }
-        } catch (error) {
-            console.error("Failed to save cart to localStorage", error);
-        }
-    }, [state]);
-
-    return (
-        <CartContext.Provider value={{ cart: state, dispatch }}>
-            {children}
-        </CartContext.Provider>
-    );
+  return (
+    <CartContext.Provider value={{ cart, dispatch }}>
+      {children}
+    </CartContext.Provider>
+  );
 };
 
-export const useCart = () => {
-    return useContext(CartContext);
-};
+export const useCart = () => useContext(CartContext);

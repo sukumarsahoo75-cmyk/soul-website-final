@@ -1,45 +1,41 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../firebase'; // Import from your firebase.js config
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { auth } from '../firebase';
 import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
   signOut, 
-  onAuthStateChanged 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
 } from 'firebase/auth';
 
-// 1. Create the context
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-// 2. Create a custom hook for easy access
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
 
-// 3. Create the Provider component
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true); // To check if auth state is loaded
+  const [loading, setLoading] = useState(true);
 
-  function signup(email, password) {
+  // 1. SIGNUP FUNCTION
+  const signup = (email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
-  }
+  };
 
-  function login(email, password) {
+  // 2. LOGIN FUNCTION
+  const login = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
-  }
+  };
 
-  function logout() {
+  // 3. LOGOUT FUNCTION
+  const logout = () => {
     return signOut(auth);
-  }
+  };
 
-  // This effect runs once on mount to check the user's auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      setLoading(false); // Auth state has been confirmed
+      setLoading(false);
     });
-
-    return unsubscribe; // Cleanup the listener when the component unmounts
+    return unsubscribe;
   }, []);
 
   const value = {
@@ -49,7 +45,6 @@ export const AuthProvider = ({ children }) => {
     logout
   };
 
-  // We don't render the app until the auth state has been checked
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}

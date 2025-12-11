@@ -3,20 +3,20 @@ import Layout from '../components/Layout';
 import { products } from '../data'; 
 import { Link } from 'react-router-dom';
 
-const ForHer = () => {
-  // Filter specifically for women's products
-  const herProducts = products.filter(p => p.category === 'for-her');
+const Unisex = () => {
+  // Filter for unisex products
+  const unisexProducts = products.filter(p => p.category === 'unisex');
 
   return (
     <Layout>
       <div className="bg-gray-900 min-h-screen py-10 px-4">
         <div className="text-center mb-10">
-          <h1 className="text-4xl text-gold-500 mb-2 font-serif">For Her</h1>
-          <p className="text-gray-400">Elegance and grace captured in a bottle.</p>
+          <h1 className="text-4xl text-gold-500 mb-2 font-serif">Unisex Collection</h1>
+          <p className="text-gray-400">Scents that transcend gender boundaries.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {herProducts.map(product => (
+          {unisexProducts.map(product => (
             <Link key={product.id} to={`/product/${product.id}`}>
               <div className="bg-gray-800 rounded-lg p-4 hover:shadow-[0_0_15px_rgba(212,175,55,0.2)] transition border border-gray-800 hover:border-gold-500/30 group">
                 <div className="h-64 overflow-hidden rounded mb-4 bg-gray-700 relative">
@@ -37,4 +37,4 @@ const ForHer = () => {
   );
 };
 
-export default ForHer;
+export default Unisex;

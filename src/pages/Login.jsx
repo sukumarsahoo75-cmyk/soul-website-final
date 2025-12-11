@@ -14,67 +14,64 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       setError('');
       setLoading(true);
       await login(email, password);
-      navigate('/'); // Redirect to homepage after successful login
+      navigate('/'); 
     } catch (err) {
-      setError('Failed to log in. Please check your credentials.');
-      console.error(err);
+      setError("Failed to log in. Please check your email and password.");
     }
-
     setLoading(false);
   };
 
   return (
     <Layout>
-      <section className="py-16 bg-gray-900 min-h-screen flex items-center justify-center">
-        <div className="w-full max-w-md mx-auto">
-          <form onSubmit={handleSubmit} className="bg-gray-800 shadow-2xl rounded-xl p-8 border border-gold-500/30">
-            <h2 className="text-3xl font-bold text-gold-500 text-center mb-6">Log In</h2>
-            
-            {error && <p className="bg-red-500/20 text-red-400 p-3 rounded mb-4 text-center">{error}</p>}
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-gray-900 p-8 rounded-xl border border-gray-800 shadow-2xl">
+          <h2 className="text-3xl font-serif text-yellow-500 text-center mb-6">Welcome Back</h2>
+          
+          {error && <div className="bg-red-500/20 text-red-500 p-3 rounded mb-4 text-sm text-center">{error}</div>}
 
-            <div className="mb-4">
-              <label className="block text-gold-400 text-sm font-bold mb-2" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">Email</label>
+              <input 
+                type="email" 
+                required 
+                className="w-full bg-black border border-gray-700 text-white p-3 rounded focus:border-yellow-500 focus:outline-none"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:border-gold-500"
               />
             </div>
 
-            <div className="mb-6">
-              <label className="block text-gold-400 text-sm font-bold mb-2" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
+            <div>
+              <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">Password</label>
+              <input 
+                type="password" 
+                required 
+                className="w-full bg-black border border-gray-700 text-white p-3 rounded focus:border-yellow-500 focus:outline-none"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none focus:border-gold-500"
               />
+              <div className="text-right mt-1">
+                <Link to="/forgot-password" class="text-xs text-gray-500 hover:text-yellow-500">Forgot Password?</Link>
+              </div>
             </div>
 
-            <button disabled={loading} type="submit" className="w-full bg-gold-600 text-black font-semibold py-3 rounded-lg hover:bg-gold-500 transition disabled:bg-gray-500">
-              {loading ? 'Logging In...' : 'Log In'}
+            <button 
+              disabled={loading}
+              className="w-full bg-yellow-500 text-black font-bold py-3 rounded hover:bg-white transition uppercase tracking-widest"
+            >
+              Log In
             </button>
-
-            <p className="text-center text-gray-400 mt-6">
-              Need an account? <Link to="/signup" className="text-gold-500 hover:text-gold-300">Sign Up</Link>
-            </p>
           </form>
+
+          <div className="mt-6 text-center text-gray-400 text-sm">
+            Need an account? <Link to="/signup" className="text-yellow-500 underline">Sign Up</Link>
+          </div>
         </div>
-      </section>
+      </div>
     </Layout>
   );
 };
