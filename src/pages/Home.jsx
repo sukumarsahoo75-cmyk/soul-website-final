@@ -1,54 +1,139 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import { Link } from 'react-router-dom';
-import HeroSection from '../components/HeroSection'; 
+import { products } from '../data';
 
 const Home = () => {
+  // Get Best Sellers for the bottom section
+  const featuredProducts = products.filter(p => p.isSignature).slice(0, 5);
+
   return (
     <Layout>
-      <HeroSection />
-
-      <section className="py-16 bg-black text-white text-center">
-        <h2 className="text-3xl font-serif text-yellow-500 mb-8">Start Your Journey</h2>
-        <div className="flex justify-center gap-6">
-            {/* Major Action: Yellow */}
-            <Link to="/all-products" className="bg-yellow-500 text-black px-8 py-3 rounded font-bold hover:bg-white transition uppercase tracking-widest">
+      <div className="bg-black text-white font-sans">
+        
+        {/* --- 1. HERO SECTION --- */}
+        <div className="relative h-[70vh] w-full bg-gray-900 overflow-hidden flex items-center justify-center">
+          {/* Main Hero Background */}
+          <div className="absolute inset-0 bg-black/40 z-10"></div>
+          <img 
+            src="/images/hero-banner.jpg" 
+            onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=1000&auto=format&fit=crop'} 
+            alt="Soul Hero" 
+            className="w-full h-full object-cover absolute inset-0 opacity-60"
+          />
+          
+          <div className="relative z-20 text-center px-4">
+            <h2 className="text-yellow-500 tracking-[0.3em] text-xs md:text-sm uppercase mb-4">
+              Luxury Redefined
+            </h2>
+            <h1 className="text-5xl md:text-7xl font-serif text-white mb-8 leading-tight">
+              Essence of <br/> <span className="italic text-yellow-500">Who You Are</span>
+            </h1>
+            <Link 
+              to="/all-products" 
+              className="border border-white text-white px-10 py-3 hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition uppercase tracking-widest text-sm font-bold"
+            >
               Shop All
-            </Link>
-            
-            {/* Secondary Action: Yellow Border */}
-            <Link to="/custom-box" className="border border-yellow-500 text-yellow-500 px-8 py-3 rounded font-bold hover:bg-yellow-500 hover:text-black transition uppercase tracking-widest">
-              Build a Box
-            </Link>
-        </div>
-      </section>
-
-      {/* CATEGORIES */}
-      <section className="py-20 bg-black border-t border-gray-900">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-serif text-center text-yellow-500 mb-12">Collections</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-6xl mx-auto">
-            <Link to="/for-him" className="group relative h-80 overflow-hidden rounded-lg border border-gray-800 hover:border-yellow-500 transition">
-              <div className="absolute inset-0 bg-gray-900 group-hover:scale-105 transition duration-700"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <h3 className="text-3xl font-serif text-white group-hover:text-yellow-500 tracking-widest transition">FOR HIM</h3>
-              </div>
-            </Link>
-            <Link to="/for-her" className="group relative h-80 overflow-hidden rounded-lg border border-gray-800 hover:border-yellow-500 transition">
-               <div className="absolute inset-0 bg-gray-900 group-hover:scale-105 transition duration-700"></div>
-               <div className="absolute inset-0 flex items-center justify-center">
-                <h3 className="text-3xl font-serif text-white group-hover:text-yellow-500 tracking-widest transition">FOR HER</h3>
-              </div>
-            </Link>
-            <Link to="/unisex" className="group relative h-80 overflow-hidden rounded-lg border border-gray-800 hover:border-yellow-500 transition">
-               <div className="absolute inset-0 bg-gray-900 group-hover:scale-105 transition duration-700"></div>
-               <div className="absolute inset-0 flex items-center justify-center">
-                <h3 className="text-3xl font-serif text-white group-hover:text-yellow-500 tracking-widest transition">UNISEX</h3>
-              </div>
             </Link>
           </div>
         </div>
-      </section>
+
+        {/* --- 2. THE 3 CATEGORIES (Fixed Design) --- */}
+        {/* On Mobile: Stacked (h-64 per item). On Desktop: Side-by-side (h-[600px]) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 h-auto md:h-[600px]">
+          
+          {/* 1. FOR HIM */}
+          <Link to="/for-him" className="relative group h-64 md:h-full border-r border-b border-gray-800 overflow-hidden">
+            {/* Background Image */}
+            <img 
+              src="/images/male.jpg" 
+              alt="For Him" 
+              className="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-40 group-hover:opacity-60" 
+            />
+            {/* Text Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h3 className="text-3xl md:text-4xl font-serif text-white group-hover:text-yellow-500 transition tracking-wider">
+                FOR HIM
+              </h3>
+            </div>
+          </Link>
+
+          {/* 2. FOR HER */}
+          <Link to="/for-her" className="relative group h-64 md:h-full border-r border-b border-gray-800 overflow-hidden">
+            <img 
+              src="/images/female.jpg" 
+              alt="For Her" 
+              className="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-40 group-hover:opacity-60" 
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h3 className="text-3xl md:text-4xl font-serif text-white group-hover:text-yellow-500 transition tracking-wider">
+                FOR HER
+              </h3>
+            </div>
+          </Link>
+
+          {/* 3. UNISEX */}
+          <Link to="/unisex" className="relative group h-64 md:h-full border-b border-gray-800 overflow-hidden">
+            <img 
+              src="/images/unisex.jpg" 
+              alt="Unisex" 
+              className="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-40 group-hover:opacity-60" 
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h3 className="text-3xl md:text-4xl font-serif text-white group-hover:text-yellow-500 transition tracking-wider">
+                UNISEX
+              </h3>
+            </div>
+          </Link>
+
+        </div>
+
+        {/* --- 3. CUSTOM GIFT SET BANNER --- */}
+        <div className="py-20 px-4 text-center bg-gray-900 border-b border-gray-800">
+           <h2 className="text-3xl font-serif text-yellow-500 mb-4">The Perfect Gift</h2>
+           <p className="text-gray-400 mb-8 max-w-xl mx-auto">Create a custom box with 4 of your favorite scents (20ml each).</p>
+           <Link 
+              to="/custom-box" 
+              className="inline-block bg-yellow-500 text-black px-10 py-4 font-bold uppercase tracking-widest hover:bg-white transition"
+            >
+              Build Your Box
+           </Link>
+        </div>
+
+        {/* --- 4. BEST SELLERS SCROLL --- */}
+        <div className="container mx-auto px-4 py-16">
+          <div className="flex justify-between items-end mb-8">
+            <h2 className="text-2xl md:text-3xl font-serif text-white">Trending Now</h2>
+            <Link to="/all-products" className="text-yellow-500 text-xs uppercase tracking-widest border-b border-yellow-500 pb-1">View All</Link>
+          </div>
+
+          <div className="flex overflow-x-auto space-x-6 pb-8 custom-scrollbar">
+            {featuredProducts.map((product) => (
+              <Link to={`/product/${product.id}`} key={product.id} className="min-w-[220px] group">
+                <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800">
+                  <div className="relative h-64">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className={`w-full h-full object-cover transition duration-500 ${!product.inStock ? 'grayscale opacity-50' : 'group-hover:opacity-80'}`} 
+                    />
+                    {!product.inStock && (
+                       <div className="absolute inset-0 flex items-center justify-center">
+                         <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest">Sold Out</span>
+                       </div>
+                    )}
+                  </div>
+                  <div className="p-4 text-center">
+                    <h3 className="text-white font-serif text-lg mb-1">{product.name}</h3>
+                    <p className="text-yellow-500 font-bold">₹{product.price}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+      </div>
     </Layout>
   );
 };
