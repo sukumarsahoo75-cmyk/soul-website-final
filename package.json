@@ -10,6 +10,7 @@
     "tailwind:init": "tailwindcss init -p"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "cors": "^2.8.5",
     "firebase": "^10.12.2",
     "razorpay": "^2.9.4",
