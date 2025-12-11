@@ -1,28 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { Link } from 'react-router-dom';
 import { products } from '../data';
 
 const Home = () => {
-  // Get Best Sellers for the bottom section
+  // --- 1. HERO SLIDER LOGIC ---
+  const heroImages = [
+    "/images/hero1.jpg", // Make sure you have this image
+    "/images/hero2.jpg"  // Make sure you have this image
+  ];
+
+  const [currentImage, setCurrentImage] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % heroImages.length);
+    }, 5000); // Change image every 5 seconds
+    return () => clearInterval(timer);
+  }, []);
+
+  // Get Best Sellers
   const featuredProducts = products.filter(p => p.isSignature).slice(0, 5);
 
   return (
     <Layout>
       <div className="bg-black text-white font-sans">
         
-        {/* --- 1. HERO SECTION --- */}
+        {/* --- 1. HERO SECTION (SLIDESHOW) --- */}
         <div className="relative h-[70vh] w-full bg-gray-900 overflow-hidden flex items-center justify-center">
-          {/* Main Hero Background */}
-          <div className="absolute inset-0 bg-black/40 z-10"></div>
-          <img 
-            src="/images/hero-banner.jpg" 
-            onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=1000&auto=format&fit=crop'} 
-            alt="Soul Hero" 
-            className="w-full h-full object-cover absolute inset-0 opacity-60"
-          />
           
-          <div className="relative z-20 text-center px-4">
+          {/* Background Images with Fade Effect */}
+          {heroImages.map((img, index) => (
+            <img 
+              key={index}
+              src={img}
+              // Fallback if image is missing
+              onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=1000&auto=format&fit=crop'} 
+              alt={`Hero ${index}`} 
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                index === currentImage ? "opacity-60" : "opacity-0"
+              }`}
+            />
+          ))}
+          
+          {/* Dark Overlay for Text Readability */}
+          <div className="absolute inset-0 bg-black/30 z-10"></div>
+          
+          {/* Hero Text */}
+          <div className="relative z-20 text-center px-4 animate-fade-in-up">
             <h2 className="text-yellow-500 tracking-[0.3em] text-xs md:text-sm uppercase mb-4">
               Luxury Redefined
             </h2>
@@ -38,19 +63,16 @@ const Home = () => {
           </div>
         </div>
 
-        {/* --- 2. THE 3 CATEGORIES (Fixed Design) --- */}
-        {/* On Mobile: Stacked (h-64 per item). On Desktop: Side-by-side (h-[600px]) */}
+        {/* --- 2. THE 3 CATEGORIES (3-Column Layout) --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 h-auto md:h-[600px]">
           
           {/* 1. FOR HIM */}
           <Link to="/for-him" className="relative group h-64 md:h-full border-r border-b border-gray-800 overflow-hidden">
-            {/* Background Image */}
             <img 
               src="/images/male.jpg" 
               alt="For Him" 
               className="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-40 group-hover:opacity-60" 
             />
-            {/* Text Overlay */}
             <div className="absolute inset-0 flex items-center justify-center">
               <h3 className="text-3xl md:text-4xl font-serif text-white group-hover:text-yellow-500 transition tracking-wider">
                 FOR HIM
