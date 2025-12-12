@@ -11,11 +11,12 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
-import ForgotPassword from './pages/ForgotPassword'; // <--- NEW IMPORT
+import ForgotPassword from './pages/ForgotPassword';
 import OurStory from './pages/OurStory';
 import ContactUs from './pages/ContactUs';
 import Profile from './pages/Profile';
 import Checkout from './pages/Checkout';
+import Admin from './pages/Admin'; // <--- NEW ADMIN IMPORT
 
 // --- Custom Collections ---
 import CustomBox from './pages/CustomBox';
@@ -57,7 +58,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} /> {/* <--- NEW ROUTE */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         
         {/* Protected User Routes */}
         <Route 
@@ -78,11 +79,14 @@ function App() {
           } 
         />
 
-        {/* 6. Info Pages */}
+        {/* 6. Admin Dashboard (Secret Route) */}
+        <Route path="/admin" element={<Admin />} />
+
+        {/* 7. Info Pages */}
         <Route path="/our-story" element={<OurStory />} />
         <Route path="/contact-us" element={<ContactUs />} />
         
-        {/* 7. Policy Pages */}
+        {/* 8. Policy Pages */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
