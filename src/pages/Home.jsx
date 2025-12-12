@@ -76,30 +76,30 @@ const Home = () => {
           </Link>
         </div>
 
-        {/* --- 3. CUSTOM GIFT SET BANNER (FIXED FOR MOBILE) --- */}
-        <div className="relative min-h-[400px] md:min-h-[550px] flex items-center justify-center px-4 text-center border-b border-gray-800 overflow-hidden group bg-gray-900">
+        {/* --- 3. CUSTOM GIFT SET BANNER (LEFT ALIGNED) --- */}
+        <div className="relative min-h-[550px] flex items-center justify-center px-4 text-center border-b border-gray-800 overflow-hidden group">
            
            {/* Background Image */}
            <img 
              src="/images/costume.jpg" 
              onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1616091093747-4d830b56b35d?auto=format&fit=crop&w=1500&q=80'}
              alt="Custom Gift Set background" 
-             // FIX: 'object-contain' on mobile ensures the full image is shown without cropping.
-             className="absolute inset-0 w-full h-full object-contain md:object-cover opacity-60 transition duration-1000 group-hover:scale-105 group-hover:opacity-70"
+             // FIX: 'object-left' anchors the image to the left side.
+             className="absolute inset-0 w-full h-full object-cover object-left opacity-100 transition duration-1000 group-hover:scale-105 group-hover:opacity-70"
            />
            
            {/* Dark Overlay */}
            <div className="absolute inset-0 bg-black/50 z-10"></div>
 
            {/* Content Box */}
-           <div className="relative z-20 max-w-3xl p-6 md:p-12 bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl">
-              <h2 className="text-3xl md:text-5xl font-serif text-yellow-500 mb-4 md:mb-6">The Perfect Gift</h2>
-              <p className="text-gray-100 text-sm md:text-xl mb-6 md:mb-10 leading-relaxed">
+           <div className="relative z-20 max-w-3xl p-8 md:p-12 bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl">
+              <h2 className="text-4xl md:text-5xl font-serif text-yellow-500 mb-6">The Perfect Gift</h2>
+              <p className="text-gray-100 text-lg md:text-xl mb-10 leading-relaxed">
                 Curate an exclusive box with 4 of your favorite scents (20ml each). A unique experience, crafted by you.
               </p>
               <Link 
                   to="/custom-box" 
-                  className="inline-block bg-yellow-500 text-black px-8 py-3 md:px-12 md:py-4 font-bold uppercase tracking-[0.2em] text-xs md:text-base hover:bg-white transition shadow-lg hover:shadow-yellow-500/20"
+                  className="inline-block bg-yellow-500 text-black px-12 py-4 font-bold uppercase tracking-[0.2em] text-sm md:text-base hover:bg-white transition shadow-lg hover:shadow-yellow-500/20"
                 >
                   Build Your Box
               </Link>
