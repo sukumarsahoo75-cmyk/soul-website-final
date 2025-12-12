@@ -110,7 +110,7 @@ const Checkout = () => {
     }
 
     const options = {
-      key: "rzp_test_RNv3oQohCMRyrl", // <--- PASTE YOUR KEY HERE
+      key: "rzp_live_RgTrkxzolbi2tM", // <--- PASTE YOUR KEY HERE
       amount: totalAmount * 100, 
       currency: "INR",
       name: "Soul Fragrance",
