@@ -6,38 +6,35 @@ const Footer = () => {
     <footer className="bg-gray-900 text-white border-t border-gray-800 pt-16 pb-8 font-sans">
       <div className="container mx-auto px-4">
         
-        {/* Switched back to 4 Columns */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 text-center md:text-left">
           
           {/* COLUMN 1: BRAND & STORY */}
           <div className="flex flex-col items-center md:items-start space-y-6">
-            {/* Logo */}
             <img src="/logo.png" alt="Soul Logo" className="w-24 h-auto" />
-            
-            {/* Our Story Link */}
             <Link to="/our-story" className="text-yellow-500 hover:text-white transition font-serif italic text-lg border-b border-yellow-500 pb-1">
               Read Our Story
             </Link>
           </div>
 
-          {/* COLUMN 2: SHOP */}
+          {/* COLUMN 2: SHOP (Updated) */}
           <div>
             <h4 className="text-yellow-500 font-bold uppercase tracking-widest mb-6 text-sm">Shop</h4>
             <ul className="space-y-3 text-sm text-gray-400">
               <li><Link to="/all-products" className="hover:text-white transition">All Perfumes</Link></li>
               <li><Link to="/for-him" className="hover:text-white transition">For Him</Link></li>
               <li><Link to="/for-her" className="hover:text-white transition">For Her</Link></li>
+              <li><Link to="/unisex" className="hover:text-white transition">Unisex</Link></li> {/* <--- ADDED */}
               <li><Link to="/custom-box" className="hover:text-white transition">Make Your Own Box</Link></li>
             </ul>
           </div>
 
-          {/* COLUMN 3: SUPPORT */}
+          {/* COLUMN 3: SUPPORT (Admin Removed) */}
           <div>
             <h4 className="text-yellow-500 font-bold uppercase tracking-widest mb-6 text-sm">Support</h4>
             <ul className="space-y-3 text-sm text-gray-400">
               <li><Link to="/contact-us" className="hover:text-white transition">Contact Us</Link></li>
               <li><Link to="/profile" className="hover:text-white transition">My Account</Link></li>
-              <li><Link to="/admin" className="hover:text-white transition">Admin Login</Link></li>
+              {/* Admin Link Removed - access via /admin URL manually */}
             </ul>
           </div>
 
