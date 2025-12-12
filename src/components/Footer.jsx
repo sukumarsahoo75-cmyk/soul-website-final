@@ -5,17 +5,10 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white border-t border-gray-800 pt-16 pb-8 font-sans">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        
+        {/* Changed grid from 4 columns to 3 columns since we removed the Brand section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12 text-center md:text-left">
           
-          {/* Brand */}
-          <div className="space-y-4">
-            {/* If you have a logo image, use it here. Otherwise text is fine */}
-            <h3 className="text-2xl font-serif text-yellow-500">SOUL</h3>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Essence of who you are. Luxury perfumes crafted to define your aura.
-            </p>
-          </div>
-
           {/* Shop */}
           <div>
             <h4 className="text-yellow-500 font-bold uppercase tracking-widest mb-6 text-sm">Shop</h4>
@@ -37,7 +30,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Legal (REQUIRED FOR RAZORPAY) */}
+          {/* Legal */}
           <div>
             <h4 className="text-yellow-500 font-bold uppercase tracking-widest mb-6 text-sm">Legal</h4>
             <ul className="space-y-3 text-sm text-gray-400">
