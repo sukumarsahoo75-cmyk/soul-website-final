@@ -6,10 +6,21 @@ const Footer = () => {
     <footer className="bg-gray-900 text-white border-t border-gray-800 pt-16 pb-8 font-sans">
       <div className="container mx-auto px-4">
         
-        {/* Changed grid from 4 columns to 3 columns since we removed the Brand section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12 text-center md:text-left">
+        {/* Switched back to 4 Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 text-center md:text-left">
           
-          {/* Shop */}
+          {/* COLUMN 1: BRAND & STORY */}
+          <div className="flex flex-col items-center md:items-start space-y-6">
+            {/* Logo */}
+            <img src="/logo.png" alt="Soul Logo" className="w-24 h-auto" />
+            
+            {/* Our Story Link */}
+            <Link to="/our-story" className="text-yellow-500 hover:text-white transition font-serif italic text-lg border-b border-yellow-500 pb-1">
+              Read Our Story
+            </Link>
+          </div>
+
+          {/* COLUMN 2: SHOP */}
           <div>
             <h4 className="text-yellow-500 font-bold uppercase tracking-widest mb-6 text-sm">Shop</h4>
             <ul className="space-y-3 text-sm text-gray-400">
@@ -20,7 +31,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* COLUMN 3: SUPPORT */}
           <div>
             <h4 className="text-yellow-500 font-bold uppercase tracking-widest mb-6 text-sm">Support</h4>
             <ul className="space-y-3 text-sm text-gray-400">
@@ -30,7 +41,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* COLUMN 4: LEGAL */}
           <div>
             <h4 className="text-yellow-500 font-bold uppercase tracking-widest mb-6 text-sm">Legal</h4>
             <ul className="space-y-3 text-sm text-gray-400">

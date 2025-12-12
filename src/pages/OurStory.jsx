@@ -35,14 +35,19 @@ const OurStory = () => {
             </div>
           </section>
 
-          {/* Section 3: The Future (Fusion & Niche) */}
+          {/* Section 3: The Craft (UPDATED) */}
           <section>
             <p className="mb-6">
-              Today, we specialize in crafting luxury-inspired perfumes that make opulence accessible. But we are already moving beyond the familiar.
+              Today, we specialize in crafting luxury-inspired perfumes that make opulence accessible. 
+              <span className="text-white font-bold block mt-4">
+                We import high-quality oils and handcraft all our perfumes in small batches, using strictly glass equipment to preserve the purity and integrity of every scent.
+              </span>
             </p>
-            <p className="text-yellow-100 italic font-serif text-xl border-l-4 border-yellow-500 pl-6 py-2">
+            
+            <p className="text-yellow-100 italic font-serif text-xl border-l-4 border-yellow-500 pl-6 py-2 mt-8">
               "We are on the verge of a new era—creating our own niche fragrances and fusion scents that blend the richness of Indian heritage with modern global elegance."
             </p>
+            
             <p className="mt-6">
               This is just the beginning of our olfactory journey. We invite you to find the scent that speaks to your soul.
             </p>
