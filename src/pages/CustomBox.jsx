@@ -25,7 +25,7 @@ const CustomBox = () => {
       payload: {
         id: "custom-box-set",
         name: "Discovery Box (4 x 20ml)",
-        price: 999, // <--- UPDATED PRICE
+        price: 999,
         image: "/logo.png", 
         quantity: 1,
         description: `Contains: ${selectedScents.map(p => p.name).join(", ")}`
@@ -36,12 +36,23 @@ const CustomBox = () => {
 
   return (
     <Layout>
-      <div className="bg-black min-h-screen py-10 px-4 text-white">
+      <div className="bg-black min-h-screen text-white pb-24">
         
-        {/* HEADER */}
-        <div className="text-center mb-10 sticky top-16 bg-black z-20 py-4 border-b border-gray-800 shadow-xl">
+        {/* --- 1. HERO IMAGE SECTION --- */}
+        {/* 'w-full h-auto' ensures the full image is shown on mobile without cropping */}
+        <div className="w-full bg-gray-900">
+           <img 
+             src="/images/costume.jpg" 
+             alt="Build Your Box"
+             onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1616091093747-4d830b56b35d?auto=format&fit=crop&w=1500&q=80'}
+             className="w-full h-auto md:h-[400px] object-contain md:object-cover"
+           />
+        </div>
+
+        {/* --- 2. STICKY HEADER & TRACKER --- */}
+        {/* This sticks to the top once you scroll past the image */}
+        <div className="text-center sticky top-16 bg-black/95 backdrop-blur z-20 py-6 border-b border-gray-800 shadow-xl">
           <h1 className="text-3xl md:text-4xl text-yellow-500 font-serif font-bold">Build Your Own Box</h1>
-          {/* UPDATED PRICE TEXT BELOW */}
           <p className="text-gray-400 mt-2 text-sm">Select 4 Miniatures (20ml) for <span className="text-white font-bold text-lg">₹999</span></p>
           
           {/* TRACKER CIRCLES */}
@@ -57,8 +68,9 @@ const CustomBox = () => {
           </div>
         </div>
 
-        {/* PRODUCT GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto pb-24">
+        {/* --- 3. PRODUCT GRID --- */}
+        {/* Added top padding (pt-8) for spacing after the sticky header */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto px-4 pt-8">
           {products.map((product) => {
             const isSelected = selectedScents.find(item => item.id === product.id);
             const isDisabled = !isSelected && selectedScents.length >= 4;
@@ -69,12 +81,12 @@ const CustomBox = () => {
                 onClick={() => !isDisabled && toggleSelection(product)}
                 className={`cursor-pointer p-4 rounded-lg transition-all relative group
                   ${isSelected 
-                    ? 'border-2 border-yellow-500 bg-gray-800 shadow-[0_0_15px_rgba(234,179,8,0.3)]' // <--- THICKER BORDER & LIGHTER BG
+                    ? 'border-2 border-yellow-500 bg-gray-800 shadow-[0_0_15px_rgba(234,179,8,0.3)]' 
                     : 'border border-gray-800 bg-black hover:border-gray-600'}
                   ${isDisabled ? 'opacity-30 cursor-not-allowed grayscale' : ''}
                 `}
               >
-                {/* "SELECTED" BADGE - FIXED VISIBILITY (z-10) */}
+                {/* "SELECTED" BADGE */}
                 {isSelected && (
                   <div className="absolute top-2 right-2 bg-yellow-500 text-black px-2 py-1 rounded text-[10px] font-bold z-10 shadow-md">
                     SELECTED
@@ -98,7 +110,7 @@ const CustomBox = () => {
           })}
         </div>
 
-        {/* CHECKOUT BUTTON */}
+        {/* --- 4. CHECKOUT BUTTON --- */}
         <div className="fixed bottom-0 left-0 w-full bg-black/95 backdrop-blur p-4 border-t border-gray-800 flex justify-center z-50">
           <button 
             onClick={handleAddToCart}
