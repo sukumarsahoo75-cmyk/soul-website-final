@@ -3,7 +3,7 @@
 export const products = [
   // --- FOR HER (1-4) ---
   { 
-    id: 1, name: "Blossom", category: "for-her", price: 1, image: "/images/blossom.jpg",
+    id: 1, name: "Blossom", category: "for-her", price: 599, image: "/images/blossom.jpg",
     inStock: true, // <--- NEW FIELD
     description: "A gorgeous gardenia-based floral scent that feels like a spring garden in full bloom. Cheerful, pear-sweetened, and beautifully feminine.",
     inspiration: "A floral masterpiece comparable to Gucci Flora.",
