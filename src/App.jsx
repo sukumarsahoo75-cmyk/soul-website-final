@@ -16,7 +16,7 @@ import OurStory from './pages/OurStory';
 import ContactUs from './pages/ContactUs';
 import Profile from './pages/Profile';
 import Checkout from './pages/Checkout';
-import Admin from './pages/Admin'; // <--- NEW ADMIN IMPORT
+import Admin from './pages/Admin'; 
 
 // --- Custom Collections ---
 import CustomBox from './pages/CustomBox';
@@ -27,6 +27,7 @@ import SignatureCollection from './pages/SignatureCollection';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ShippingPolicy from './pages/ShippingPolicy';
 import RefundPolicy from './pages/RefundPolicy';
+import TermsConditions from './pages/TermsConditions'; // <--- NEW IMPORT
 
 // --- Component Imports ---
 import ScrollToTop from './components/ScrollToTop';
@@ -90,6 +91,7 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} /> {/* <--- NEW ROUTE */}
         
       </Routes>
     </Router>

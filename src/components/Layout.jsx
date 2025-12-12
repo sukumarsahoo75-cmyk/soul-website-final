@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // <--- Added this to check login status
+import { useAuth } from '../context/AuthContext';
+import Footer from './Footer'; // <--- IMPORT THE NEW FOOTER FILE
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const { currentUser } = useAuth(); // <--- Get the logged-in user
+  const { currentUser } = useAuth();
 
   // Helper: Active link style (Yellow) vs Inactive (White)
   const isActive = (path) => 
@@ -75,28 +76,8 @@ const Layout = ({ children }) => {
         {children}
       </main>
 
-      {/* --- FOOTER (CLEAN VERSION) --- */}
-      <footer className="bg-black text-gray-500 py-12 text-center border-t border-gray-900">
-        
-        {/* MAIN LINKS */}
-        <div className="flex justify-center space-x-6 text-xs uppercase tracking-widest mb-6 text-white font-bold">
-          <Link to="/contact-us" className="hover:text-yellow-500 transition">Contact</Link>
-          <Link to="/our-story" className="hover:text-yellow-500 transition">Our Story</Link>
-          <Link to="/profile" className="hover:text-yellow-500 transition">My Account</Link>
-        </div>
-
-        {/* POLICY LINKS */}
-        <div className="flex justify-center space-x-6 text-[10px] uppercase tracking-wider mb-8 text-gray-400">
-          <Link to="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link>
-          <Link to="/shipping-policy" className="hover:text-white transition">Shipping Policy</Link>
-          <Link to="/refund-policy" className="hover:text-white transition">Refund Policy</Link>
-        </div>
-
-        {/* COPYRIGHT */}
-        <p className="text-[10px] tracking-widest text-gray-500">
-          © 2025 Soul Fragrance. All rights reserved.
-        </p>
-      </footer>
+      {/* --- NEW FOOTER COMPONENT --- */}
+      <Footer /> 
 
     </div>
   );
