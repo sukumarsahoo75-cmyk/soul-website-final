@@ -1,32 +1,39 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from "react";
 
 const CartContext = createContext();
 
 const cartReducer = (state, action) => {
   switch (action.type) {
-    case 'ADD_ITEM':
+    case "ADD_ITEM":
       // Check if item already exists
-      const existingItem = state.find(item => item.id === action.payload.id);
+      const existingItem = state.find((item) => item.id === action.payload.id);
       if (existingItem) {
-        return state.map(item =>
+        return state.map((item) =>
           item.id === action.payload.id
-            ? { ...item, quantity: item.quantity + action.payload.quantity }
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...state, action.payload];
+      return [...state, { ...action.payload, quantity: 1 }];
 
-    case 'REMOVE_ITEM':
-      return state.filter(item => item.id !== action.payload.id);
+    case "REMOVE_ITEM":
+      return state.filter((item) => item.id !== action.payload);
 
-    case 'UPDATE_QUANTITY':
-      return state.map(item =>
-        item.id === action.payload.id
-          ? { ...item, quantity: Math.max(1, action.payload.quantity) } // Prevent going below 1
+    case "INCREMENT":
+      return state.map((item) =>
+        item.id === action.payload
+          ? { ...item, quantity: item.quantity + 1 }
           : item
       );
 
-    case 'CLEAR_CART':
+    case "DECREMENT":
+      return state.map((item) =>
+        item.id === action.payload && item.quantity > 1
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      );
+
+    case "CLEAR_CART":
       return [];
 
     default:
@@ -35,14 +42,15 @@ const cartReducer = (state, action) => {
 };
 
 export const CartProvider = ({ children }) => {
-  // Load cart from localStorage so items stay after refresh
+  // Load cart from localStorage on start
   const [cart, dispatch] = useReducer(cartReducer, [], () => {
-    const localData = localStorage.getItem('soulCart');
+    const localData = localStorage.getItem("soul-cart");
     return localData ? JSON.parse(localData) : [];
   });
 
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('soulCart', JSON.stringify(cart));
+    localStorage.setItem("soul-cart", JSON.stringify(cart));
   }, [cart]);
 
   return (
