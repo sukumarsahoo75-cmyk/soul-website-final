@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useCart } from '../context/CartContext';
-import { products } from '../data'; 
+import { useAuth } from '../context/AuthContext';
+import { products } from '../data';
+import { db } from '../firebase';
+// --- ADDED: doc, deleteDoc, updateDoc ---
+import { collection, addDoc, query, where, getDocs, Timestamp, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
 const StarRating = ({ rating }) => {
   return (
@@ -17,12 +21,100 @@ const StarRating = ({ rating }) => {
 const ProductDetail = () => {
   const { id } = useParams();
   const { dispatch } = useCart();
+  const { currentUser } = useAuth();
+  
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('details');
 
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState('');
+  const [rating, setRating] = useState(5);
+  
+  // --- NEW: TRACK WHICH REVIEW IS BEING EDITED ---
+  const [editingId, setEditingId] = useState(null);
+
   const product = products.find(p => p.id === parseInt(id));
 
-  if (!product) return <Layout><div className="text-center p-20 text-white">Product Not Found</div></Layout>;
+  // FETCH REVIEWS
+  useEffect(() => {
+    fetchReviews();
+  }, [id]);
+
+  const fetchReviews = async () => {
+    try {
+      const q = query(
+        collection(db, "reviews"), 
+        where("productId", "==", parseInt(id)),
+        orderBy("createdAt", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+      const fetchedReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setReviews(fetchedReviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  // --- SUBMIT (ADD OR UPDATE) ---
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!currentUser) return alert("Please login to review");
+    if (!newReview.trim()) return;
+
+    try {
+      if (editingId) {
+        // --- UPDATE EXISTING REVIEW ---
+        const reviewRef = doc(db, "reviews", editingId);
+        await updateDoc(reviewRef, {
+          text: newReview,
+          rating: rating,
+          // We don't update createdAt so it keeps original date
+        });
+        alert("Review updated successfully!");
+        setEditingId(null); // Stop editing mode
+      } else {
+        // --- ADD NEW REVIEW ---
+        await addDoc(collection(db, "reviews"), {
+          productId: parseInt(id),
+          user: currentUser.email.split('@')[0],
+          userId: currentUser.uid,
+          text: newReview,
+          rating: rating,
+          createdAt: Timestamp.now()
+        });
+        alert("Review posted successfully!");
+      }
+
+      setNewReview('');
+      setRating(5);
+      fetchReviews(); 
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Failed to save review.");
+    }
+  };
+
+  // --- DELETE FUNCTION ---
+  const handleDelete = async (reviewId) => {
+    if (window.confirm("Are you sure you want to delete this review?")) {
+      try {
+        await deleteDoc(doc(db, "reviews", reviewId));
+        fetchReviews(); // Refresh list
+      } catch (error) {
+        console.error("Error deleting review:", error);
+        alert("Failed to delete review.");
+      }
+    }
+  };
+
+  // --- EDIT FUNCTION (Populate Form) ---
+  const handleEdit = (review) => {
+    setNewReview(review.text);
+    setRating(review.rating);
+    setEditingId(review.id);
+    // Scroll to form (optional UX improvement)
+    document.getElementById('review-form').scrollIntoView({ behavior: 'smooth' });
+  };
 
   const addToCart = () => {
     dispatch({ 
@@ -31,6 +123,8 @@ const ProductDetail = () => {
     });
     alert(`Added ${quantity} x ${product.name} to cart!`);
   };
+
+  if (!product) return <Layout><div className="text-center p-20 text-white">Product Not Found</div></Layout>;
 
   return (
     <Layout>
@@ -41,13 +135,9 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
             <div className="bg-gray-900 p-8 rounded-xl border border-gray-800 flex items-center justify-center relative">
               <img src={product.image} alt={product.name} className={`w-full max-w-md h-auto rounded shadow-2xl transition duration-500 ${!product.inStock && 'grayscale opacity-50'}`}/>
-              
-              {/* OUT OF STOCK OVERLAY */}
               {!product.inStock && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-red-600 text-white font-bold px-6 py-2 text-xl rounded uppercase tracking-widest shadow-xl">
-                    Out of Stock
-                  </span>
+                  <span className="bg-red-600 text-white font-bold px-6 py-2 text-xl rounded uppercase tracking-widest shadow-xl">Out of Stock</span>
                 </div>
               )}
             </div>
@@ -59,14 +149,12 @@ const ProductDetail = () => {
                 </span>
                 <div className="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-full">
                   <StarRating rating={product.rating} />
-                  <span className="text-xs text-gray-400">({product.reviews.length} Reviews)</span>
+                  <span className="text-xs text-gray-400">({reviews.length > 0 ? reviews.length : product.reviews.length} Reviews)</span>
                 </div>
               </div>
 
               <h1 className="text-5xl font-serif text-white mb-4">{product.name}</h1>
-              <p className="text-gray-400 mb-6 text-lg leading-relaxed italic border-l-2 border-yellow-500 pl-4">
-                "{product.inspiration}"
-              </p>
+              <p className="text-gray-400 mb-6 text-lg leading-relaxed italic border-l-2 border-yellow-500 pl-4">"{product.inspiration}"</p>
               
               <div className="mb-8 bg-gray-900 p-4 rounded-lg border border-gray-800">
                 <p className="text-gray-300 text-sm mb-2">{product.description}</p>
@@ -76,23 +164,16 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* ACTION AREA */}
               <div className="flex space-x-4 h-14">
                  <div className="flex items-center border border-gray-700 rounded bg-black">
                     <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-l" disabled={!product.inStock}>-</button>
                     <span className="px-5 text-white font-bold text-lg">{quantity}</span>
                     <button onClick={() => setQuantity(quantity + 1)} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-r" disabled={!product.inStock}>+</button>
                  </div>
-                 
-                 {/* BUTTON LOGIC */}
                  {product.inStock ? (
-                   <button onClick={addToCart} className="flex-1 bg-yellow-500 text-black font-bold uppercase tracking-widest text-lg rounded hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)]">
-                     Add to Cart
-                   </button>
+                   <button onClick={addToCart} className="flex-1 bg-yellow-500 text-black font-bold uppercase tracking-widest text-lg rounded hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)]">Add to Cart</button>
                  ) : (
-                   <button disabled className="flex-1 bg-gray-700 text-gray-400 font-bold uppercase tracking-widest text-lg rounded cursor-not-allowed">
-                     Sold Out
-                   </button>
+                   <button disabled className="flex-1 bg-gray-700 text-gray-400 font-bold uppercase tracking-widest text-lg rounded cursor-not-allowed">Sold Out</button>
                  )}
               </div>
             </div>
@@ -108,7 +189,6 @@ const ProductDetail = () => {
             {/* TAB CONTENT: DETAILS */}
             {activeTab === 'details' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 animate-fade-in">
-                {/* NOTES */}
                 <div>
                   <h3 className="text-2xl font-serif text-white mb-6">Fragrance Pyramid</h3>
                   <div className="space-y-6">
@@ -126,8 +206,6 @@ const ProductDetail = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* SPECS */}
                 <div>
                   <h3 className="text-2xl font-serif text-white mb-6">Performance</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -155,14 +233,78 @@ const ProductDetail = () => {
             {/* TAB CONTENT: REVIEWS */}
             {activeTab === 'reviews' && (
               <div className="max-w-3xl mx-auto space-y-6">
-                {product.reviews.length === 0 ? (
+                
+                {currentUser ? (
+                  <form id="review-form" onSubmit={handleSubmitReview} className="bg-gray-900 p-6 rounded-lg mb-8 border border-gray-800">
+                    <h4 className="text-xl font-bold text-white mb-4">
+                      {editingId ? "Edit Your Review" : "Write a Review"}
+                    </h4>
+                    
+                    <div className="flex gap-2 mb-4">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button type="button" key={star} onClick={() => setRating(star)} className={`text-2xl ${star <= rating ? 'text-yellow-500' : 'text-gray-600'}`}>★</button>
+                      ))}
+                    </div>
+
+                    <textarea 
+                      className="w-full bg-black border border-gray-700 p-3 rounded text-white mb-4 focus:border-yellow-500 outline-none"
+                      rows="3"
+                      placeholder="Share your experience..."
+                      value={newReview}
+                      onChange={(e) => setNewReview(e.target.value)}
+                      required
+                    ></textarea>
+                    
+                    <div className="flex gap-4">
+                      <button type="submit" className="bg-white text-black px-6 py-2 font-bold uppercase text-sm tracking-wider hover:bg-gray-200">
+                        {editingId ? "Update Review" : "Submit Review"}
+                      </button>
+                      
+                      {editingId && (
+                        <button 
+                          type="button" 
+                          onClick={() => { setEditingId(null); setNewReview(''); setRating(5); }}
+                          className="text-red-500 text-sm font-bold uppercase tracking-wider hover:text-red-400"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                ) : (
+                  <div className="text-center mb-10 bg-gray-900 p-6 rounded border border-gray-800">
+                     <p className="text-gray-400 mb-4">Please login to write a review.</p>
+                     <Link to="/login" className="text-yellow-500 underline hover:text-white font-bold">Login Here</Link>
+                  </div>
+                )}
+
+                {(reviews.length > 0 ? reviews : product.reviews).length === 0 ? (
                     <div className="text-center text-gray-500">No reviews yet. Be the first!</div>
                 ) : (
-                    product.reviews.map((review, index) => (
-                    <div key={index} className="bg-gray-900 p-6 rounded border border-gray-800">
+                    (reviews.length > 0 ? reviews : product.reviews).map((review, index) => (
+                    <div key={index} className="bg-gray-900 p-6 rounded border border-gray-800 relative group">
+                        
+                        {/* --- DELETE & EDIT BUTTONS (Only visible for the author) --- */}
+                        {currentUser && review.userId === currentUser.uid && (
+                          <div className="absolute top-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => handleEdit(review)} 
+                              className="text-blue-400 hover:text-white text-xs font-bold uppercase"
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(review.id)} 
+                              className="text-red-500 hover:text-red-300 text-xs font-bold uppercase"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+
                         <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-bold text-white">{review.user}</h4>
-                        <StarRating rating={review.rating} />
+                          <h4 className="font-bold text-white">{review.user || review.userName}</h4>
+                          <StarRating rating={review.rating} />
                         </div>
                         <p className="text-gray-300">"{review.text}"</p>
                     </div>
@@ -170,7 +312,6 @@ const ProductDetail = () => {
                 )}
               </div>
             )}
-
           </div>
         </div>
       </section>

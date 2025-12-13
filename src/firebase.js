@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // <-- ADD THIS
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore"; // <--- MAKE SURE THIS IS IMPORTED
 
-// This securely reads your keys from the .env.local file
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -12,8 +11,10 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export auth and firestore services for other parts of the app to use
+// Exports
 export const auth = getAuth(app);
-export const db = getFirestore(app); // <-- ADD THIS
+export const googleProvider = new GoogleAuthProvider();
+export const db = getFirestore(app); // <--- THIS IS THE MISSING KEY

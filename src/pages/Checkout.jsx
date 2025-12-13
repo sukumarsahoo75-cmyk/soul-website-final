@@ -68,51 +68,79 @@ const Checkout = () => {
     setShippingDetails({...shippingDetails, [e.target.name]: e.target.value});
   };
 
-  // PAYMENT LOGIC
+  // --- UPDATED PAYMENT LOGIC (USES ORDERS API) ---
   const handlePayment = async (e) => {
     e.preventDefault();
 
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
-      amount: totalAmount * 100,
-      currency: "INR",
-      name: "Soul Fragrance",
-      description: "Luxury Perfume Order",
-      image: "https://soulfragrance.in/logo.png",
-      
-      handler: async function (response) {
-        try {
-          // Save Order to Firebase
-          await addDoc(collection(db, "orders"), {
-            userId: currentUser.uid,
-            items: cart,
-            amount: totalAmount,
-            shippingDetails: shippingDetails,
-            paymentId: response.razorpay_payment_id,
-            status: "Paid",
-            createdAt: serverTimestamp()
-          });
+    try {
+      // 1. CALL YOUR BACKEND TO CREATE ORDER ID
+      const response = await fetch('/api/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: totalAmount * 100, // Send amount in paise
+        }),
+      });
 
-          // Empty Cart
-          dispatch({ type: "CLEAR_CART" });
+      const orderData = await response.json();
 
-          alert("Payment Successful! Order Placed.");
-          navigate('/profile'); 
-        } catch (error) {
-          console.error("Error saving order:", error);
-          alert("Payment successful but order saving failed. Contact support.");
-        }
-      },
-      prefill: {
-        name: shippingDetails.fullName,
-        email: shippingDetails.email,
-        contact: shippingDetails.phone
-      },
-      theme: { color: "#EAB308" }
-    };
+      if (!orderData.id) {
+        console.error("Order creation failed:", orderData);
+        alert("Server error: Could not create order. Please check your connection.");
+        return;
+      }
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      // 2. OPEN RAZORPAY WITH THE ORDER ID
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
+        amount: orderData.amount, 
+        currency: orderData.currency,
+        name: "Soul Fragrance",
+        description: "Luxury Perfume Order",
+        image: "https://soulfragrance.in/logo.png",
+        order_id: orderData.id, // <--- THIS FORCES AUTO-CAPTURE
+        
+        handler: async function (response) {
+          try {
+            // Save Order to Firebase
+            await addDoc(collection(db, "orders"), {
+              userId: currentUser.uid,
+              items: cart,
+              amount: totalAmount,
+              shippingDetails: shippingDetails,
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id, // Save the backend Order ID
+              status: "Paid",
+              createdAt: serverTimestamp()
+            });
+
+            // Empty Cart
+            dispatch({ type: "CLEAR_CART" });
+
+            alert("Payment Successful! Order Placed.");
+            navigate('/profile'); 
+          } catch (error) {
+            console.error("Error saving order:", error);
+            alert("Payment successful but order saving failed. Contact support.");
+          }
+        },
+        prefill: {
+          name: shippingDetails.fullName,
+          email: shippingDetails.email,
+          contact: shippingDetails.phone
+        },
+        theme: { color: "#EAB308" }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (error) {
+      console.error("Payment Initialization Error:", error);
+      alert("Something went wrong initializing payment.");
+    }
   };
 
   return (
@@ -132,7 +160,6 @@ const Checkout = () => {
                  value={shippingDetails.fullName} onChange={handleChange} />
                
                <div className="grid grid-cols-2 gap-4">
-                  {/* --- EMAIL IS NOW EDITABLE --- */}
                   <input type="email" name="email" placeholder="Email" required
                     className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none"
                     value={shippingDetails.email} onChange={handleChange} />
