@@ -17,6 +17,7 @@ import ContactUs from './pages/ContactUs';
 import Profile from './pages/Profile';
 import Checkout from './pages/Checkout';
 import Admin from './pages/Admin'; 
+import OrderSuccess from './pages/OrderSuccess'; // <--- NEW IMPORT
 
 // --- Custom Collections ---
 import CustomBox from './pages/CustomBox';
@@ -27,7 +28,7 @@ import SignatureCollection from './pages/SignatureCollection';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ShippingPolicy from './pages/ShippingPolicy';
 import RefundPolicy from './pages/RefundPolicy';
-import TermsConditions from './pages/TermsConditions'; // <--- NEW IMPORT
+import TermsConditions from './pages/TermsConditions';
 
 // --- Component Imports ---
 import ScrollToTop from './components/ScrollToTop';
@@ -61,6 +62,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         
+        {/* --- NEW SUCCESS PAGE ROUTE --- */}
+        <Route path="/order-success" element={<OrderSuccess />} />
+
         {/* Protected User Routes */}
         <Route 
           path="/profile" 
@@ -91,7 +95,7 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
-        <Route path="/terms-conditions" element={<TermsConditions />} /> {/* <--- NEW ROUTE */}
+        <Route path="/terms-conditions" element={<TermsConditions />} />
         
       </Routes>
     </Router>

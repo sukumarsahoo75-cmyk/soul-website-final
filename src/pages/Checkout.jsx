@@ -135,8 +135,9 @@ const Checkout = () => {
             await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
 
             dispatch({ type: "CLEAR_CART" });
-            alert(`Order Placed! Your Order ID is #${displayOrderId}`);
-            navigate('/profile'); 
+            
+            // --- UPDATE IS HERE: Redirect to Success Page instead of Alert ---
+            navigate('/order-success', { state: { orderId: displayOrderId } });
 
           } catch (error) {
             console.error("Error saving order:", error);
