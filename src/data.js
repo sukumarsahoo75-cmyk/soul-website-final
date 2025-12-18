@@ -3,7 +3,7 @@
 export const products = [
   // --- FOR HER (1-4) ---
   { 
-    id: 1, name: "Blossom", category: "for-her", price: 1, image: "/images/blossom.jpg",
+    id: 1, name: "Blossom", category: "for-her", price: 599, image: "/images/blossom.jpg",
     inStock: true, // <--- NEW FIELD
     description: "A gorgeous gardenia-based floral scent that feels like a spring garden in full bloom. Cheerful, pear-sweetened, and beautifully feminine.",
     inspiration: "A floral masterpiece comparable to Gucci Flora.",
@@ -13,7 +13,7 @@ export const products = [
   },
   { 
     id: 2, name: "Desire", category: "for-her", price: 599, image: "/images/desire.jpg",
-    inStock: false,
+    inStock: true,
     description: "An addictive contrast between light and dark. The energy of black coffee meets the softness of white flowers and vanilla.",
     inspiration: "Shares the addictive coffee-vanilla DNA of YSL Black Opium.",
     notes: { top: "Pear, Pink Pepper", mid: "Coffee, Jasmine, Almond", base: "Vanilla, Patchouli, Cedar" },
@@ -31,7 +31,7 @@ export const products = [
   },
   { 
     id: 4, name: "Divine", category: "for-her", price: 599, image: "/images/divine.jpg",
-    inStock: true,
+    inStock: false,
     description: "A powerful aromatic vanilla scent. Three distinct vanillas wrapped in bright lavender create a warm, glowing aura.",
     inspiration: "Captures the golden vanilla allure of Burberry Goddess.",
     notes: { top: "Vanilla Infusion, Lavender", mid: "Vanilla Caviar", base: "Vanilla Absolute, Ginger" },
@@ -125,7 +125,7 @@ export const products = [
   },
   { 
     id: 14, name: "Fruit Absolu", category: "unisex", price: 599, image: "/images/fruit-absolu.jpg",
-    inStock: true,
+    inStock: false,
     description: "A basket of Mediterranean fruits. Sweet citrus, bright berries, and a soft musk base create a joyful, vibrant aura.",
     inspiration: "A fruity explosion reminiscent of Xerjoff Erba Pura.",
     notes: { top: "Orange, Lemon, Bergamot", mid: "Fruit Basket", base: "White Musk, Amber, Vanilla" },
@@ -134,7 +134,7 @@ export const products = [
   },
   { 
     id: 15, name: "Toxic", category: "unisex", price: 599, image: "/images/toxic.jpg",
-    inStock: true,
+    inStock: false,
     description: "Loud. Unapologetic. A firestorm of spices, tobacco, and oud. Not for the faint of heart, this is a statement maker.",
     inspiration: "A beast-mode tobacco scent comparable to Mancera Red Tobacco.",
     notes: { top: "Cinnamon, Agarwood, Saffron", mid: "Patchouli, Jasmine", base: "Tobacco, Vanilla, Sandalwood" },
@@ -143,7 +143,7 @@ export const products = [
   },
   { 
     id: 16, name: "Mystic", category: "unisex", price: 599, image: "/images/mystic.jpg",
-    inStock: true,
+    inStock: false,
     description: "An olfactory phenomenon. Bright, sweet, and airy, yet incredibly long-lasting. It smells like crystallized sugar and ambergris.",
     inspiration: "Inspired by the legendary Baccarat Rouge 540.",
     notes: { top: "Saffron, Jasmine", mid: "Amberwood", base: "Fir Resin, Cedar" },
