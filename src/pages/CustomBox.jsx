@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { products } from '../data'; 
 import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom'; // <--- ADDED useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const CustomBox = () => {
   const [selectedScents, setSelectedScents] = useState([]);
   const { dispatch } = useCart();
-  const navigate = useNavigate(); // <--- INITIALIZE NAVIGATE
+  const navigate = useNavigate();
   
   const toggleSelection = (product) => {
     // 1. Prevent selecting if out of stock
@@ -40,8 +40,8 @@ const CustomBox = () => {
     // 1. Show Popup
     alert("Discovery Box added to Cart!");
     
-    // 2. Redirect to Checkout
-    navigate('/checkout'); 
+    // 2. Redirect to Cart
+    navigate('/cart'); // <--- CHANGED FROM '/checkout' TO '/cart'
   };
 
   return (

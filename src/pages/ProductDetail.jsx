@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // <--- ADDED useNavigate
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +21,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { dispatch } = useCart();
   const { currentUser } = useAuth();
-  const navigate = useNavigate(); // <--- INITIALIZE NAVIGATE
+  const navigate = useNavigate();
   
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('details');
@@ -124,8 +124,8 @@ const ProductDetail = () => {
     // 1. Show alert
     alert(`Added ${quantity} x ${product.name} to cart!`);
     
-    // 2. Redirect to Checkout immediately after user clicks OK
-    navigate('/checkout'); 
+    // 2. Redirect to Cart immediately after user clicks OK
+    navigate('/cart'); // <--- CHANGED FROM '/checkout' TO '/cart'
   };
 
   if (!product) return <Layout><div className="text-center p-20 text-white">Product Not Found</div></Layout>;
