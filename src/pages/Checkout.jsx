@@ -62,6 +62,13 @@ const Checkout = () => {
   const handlePayment = async (e) => {
     e.preventDefault();
 
+    // --- SECURITY FIX: FORCE LOGIN BEFORE PAYMENT STARTS ---
+    if (!currentUser) {
+        alert("You must be logged in to place an order.");
+        navigate('/login', { state: { from: '/checkout' } }); // Redirects to login, then back to checkout
+        return;
+    }
+
     try {
       // 1. Create Razorpay Order
       const response = await fetch('/api/order', {
@@ -96,22 +103,24 @@ const Checkout = () => {
                 const counterRef = doc(db, "counters", "orderCounter");
                 const counterDoc = await transaction.get(counterRef);
                 
+                let newCount;
+
                 if (!counterDoc.exists()) {
-                    throw "Counter document does not exist!";
+                    // Auto-create counter if missing to prevent crashes
+                    newCount = 1001;
+                    transaction.set(counterRef, { currentSequence: 1001 });
+                } else {
+                    newCount = counterDoc.data().currentSequence + 1;
+                    transaction.update(counterRef, { currentSequence: newCount });
                 }
 
-                // 2. Increment
-                const newCount = counterDoc.data().currentSequence + 1;
                 displayOrderId = String(newCount).padStart(4, '0'); // Makes it 1001, 1002, etc.
 
-                // 3. Update counter
-                transaction.update(counterRef, { currentSequence: newCount });
-
-                // 4. Save the Order with the new ID
+                // 2. Save the Order with the new ID
                 const newOrderRef = doc(collection(db, "orders"));
                 transaction.set(newOrderRef, {
-                    userId: currentUser.uid,
-                    displayId: displayOrderId, // <--- THIS IS YOUR SERIAL NUMBER
+                    userId: currentUser.uid, // This line is safe now because we checked currentUser above
+                    displayId: displayOrderId, 
                     items: cart,
                     amount: totalAmount,
                     shippingDetails: shippingDetails,
@@ -125,23 +134,21 @@ const Checkout = () => {
             // --- NEW: SEND EMAIL ---
             const emailParams = {
                 customer_name: shippingDetails.fullName,
-                order_id: displayOrderId, // Send the serial number (e.g. 1001)
+                order_id: displayOrderId, 
                 amount: totalAmount,
                 address: `${shippingDetails.address}, ${shippingDetails.city}`,
-                to_email: shippingDetails.email // Make sure your EmailJS template uses this
+                to_email: shippingDetails.email 
             };
 
-            // REPLACE THESE WITH YOUR ACTUAL EMAILJS KEYS
             await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
 
             dispatch({ type: "CLEAR_CART" });
-            
-            // --- UPDATE IS HERE: Redirect to Success Page instead of Alert ---
             navigate('/order-success', { state: { orderId: displayOrderId } });
 
           } catch (error) {
             console.error("Error saving order:", error);
-            alert("Order placed but failed to save/email. Contact support.");
+            // Critical error: Money taken, but order failed.
+            alert(`Payment ID: ${response.razorpay_payment_id}. Order save failed. Please contact support with this ID.`);
           }
         },
         prefill: {
