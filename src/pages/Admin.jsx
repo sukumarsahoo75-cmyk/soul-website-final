@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { collection, getDocs, updateDoc, doc, orderBy, query } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import emailjs from '@emailjs/browser';
 
 const Admin = () => {
   const { currentUser } = useAuth();
@@ -47,34 +46,24 @@ const Admin = () => {
     setLoading(false);
   };
 
-  // --- UPDATED: MARK SHIPPED + SEND EMAIL ---
+  // --- SIMPLIFIED: MARK SHIPPED ONLY (NO EMAIL) ---
   const handleMarkShipped = async (order) => {
-    if (!window.confirm(`Mark Order #${order.displayId} as Shipped? This will email the customer.`)) return;
+    // Simple confirmation
+    if (!window.confirm(`Mark Order #${order.displayId} as Shipped?`)) return;
 
     try {
-      // 1. Update Firestore Status
+      // 1. Update Firestore Status ONLY
       const orderRef = doc(db, "orders", order.id);
       await updateDoc(orderRef, { status: 'Shipped' });
 
-      // 2. Send "Dispatched" Email
-      const emailParams = {
-        to_name: order.shippingDetails.fullName,
-        to_email: order.shippingDetails.email,
-        order_id: order.displayId, // Using the friendly ID (e.g. 1003)
-        message: "Your order has been dispatched and is on its way!",
-        courier_name: "Standard Shipping" // You can customize this if you have tracking info
-      };
-
-      // USE YOUR EMAILJS SERVICE ID & TEMPLATE ID HERE
-      // Make sure you have a template for "Order Shipped" or use the generic one
-      await emailjs.send('service_6kjfm2h', 'template_jzthsni', emailParams, 'LlIP1132QrVkXTpfk');
-
-      alert(`Order #${order.displayId} marked as Shipped & Email Sent!`);
-      fetchOrders(); // Refresh list to show green badge
+      alert(`Order #${order.displayId} marked as Shipped!`);
+      
+      // 2. Refresh the list to see the green badge immediately
+      fetchOrders(); 
 
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update status or send email.");
+      alert("Failed to update status.");
     }
   };
 
