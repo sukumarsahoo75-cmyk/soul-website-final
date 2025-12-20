@@ -17,7 +17,6 @@ const Admin = () => {
   const [stats, setStats] = useState({ totalRevenue: 0, totalOrders: 0 });
 
   useEffect(() => {
-    // 1. Check if user is admin
     if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
       return; 
     }
@@ -36,7 +35,6 @@ const Admin = () => {
 
       setOrders(orderList);
 
-      // Calculate Stats
       const revenue = orderList.reduce((sum, order) => sum + (order.amount || 0), 0);
       setStats({ totalRevenue: revenue, totalOrders: orderList.length });
       
@@ -46,24 +44,43 @@ const Admin = () => {
     setLoading(false);
   };
 
-  // --- SIMPLIFIED: MARK SHIPPED ONLY (NO EMAIL) ---
+  // --- 1. MARK SHIPPED (With Optional Tracking Input) ---
   const handleMarkShipped = async (order) => {
-    // Simple confirmation
-    if (!window.confirm(`Mark Order #${order.displayId} as Shipped?`)) return;
+    // Prompt for ID immediately
+    const trackingInput = prompt(`Enter Tracking ID for Order #${order.displayId} (Optional):`);
+    
+    if (trackingInput === null) return; // User clicked Cancel
 
     try {
-      // 1. Update Firestore Status ONLY
       const orderRef = doc(db, "orders", order.id);
-      await updateDoc(orderRef, { status: 'Shipped' });
+      await updateDoc(orderRef, { 
+        status: 'Shipped',
+        trackingId: trackingInput || "Processing" // Saves the ID
+      });
 
-      alert(`Order #${order.displayId} marked as Shipped!`);
-      
-      // 2. Refresh the list to see the green badge immediately
+      alert(`Order #${order.displayId} marked Shipped!`);
       fetchOrders(); 
 
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update status.");
+    }
+  };
+
+  // --- 2. UPDATE TRACKING ONLY (For orders already shipped) ---
+  const handleUpdateTracking = async (order) => {
+    const newTracking = prompt("Update Tracking ID:", order.trackingId || "");
+    
+    if (newTracking === null) return; // User clicked Cancel
+
+    try {
+      const orderRef = doc(db, "orders", order.id);
+      await updateDoc(orderRef, { trackingId: newTracking });
+      
+      alert("Tracking ID Updated!");
+      fetchOrders();
+    } catch (error) {
+      console.error("Error updating tracking:", error);
     }
   };
 
@@ -73,10 +90,6 @@ const Admin = () => {
       <Layout>
         <div className="h-screen bg-black text-white flex flex-col items-center justify-center">
           <h1 className="text-4xl font-serif text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-400">You do not have permission to view this page.</p>
-          <button onClick={() => navigate('/login')} className="mt-6 bg-yellow-500 text-black px-6 py-2 font-bold rounded">
-            Log In as Admin
-          </button>
         </div>
       </Layout>
     );
@@ -87,25 +100,19 @@ const Admin = () => {
       <div className="min-h-screen bg-black text-white py-12 px-4 font-sans">
         <div className="container mx-auto max-w-7xl">
           
-          {/* HEADER & STATS */}
+          {/* HEADER */}
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-gray-800 pb-6">
             <div>
               <h1 className="text-4xl font-serif text-yellow-500 mb-2">Admin Dashboard</h1>
               <p className="text-gray-400">Welcome back, Boss.</p>
             </div>
             <div className="flex gap-6 mt-6 md:mt-0 text-right">
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest">Total Sales</p>
-                <p className="text-3xl font-bold text-white">₹{stats.totalRevenue.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest">Total Orders</p>
-                <p className="text-3xl font-bold text-yellow-500">{stats.totalOrders}</p>
-              </div>
+               <div><p className="text-xs text-gray-500 uppercase">Sales</p><p className="text-3xl font-bold">₹{stats.totalRevenue.toLocaleString()}</p></div>
+               <div><p className="text-xs text-gray-500 uppercase">Orders</p><p className="text-3xl font-bold text-yellow-500">{stats.totalOrders}</p></div>
             </div>
           </div>
 
-          {/* ORDERS TABLE */}
+          {/* TABLE */}
           <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-gray-400">
@@ -115,7 +122,7 @@ const Admin = () => {
                     <th className="p-4">Date</th>
                     <th className="p-4">Customer</th>
                     <th className="p-4">Items</th>
-                    <th className="p-4">Amount</th>
+                    <th className="p-4">Tracking</th> {/* NEW COLUMN */}
                     <th className="p-4">Status</th>
                     <th className="p-4">Action</th>
                   </tr>
@@ -124,10 +131,7 @@ const Admin = () => {
                   {orders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-800/50 transition">
                       
-                      {/* 1. FIXED: Show "displayId" (1003) instead of random ID */}
-                      <td className="p-4 font-mono text-yellow-500">
-                        #{order.displayId || order.id.slice(0,5)}
-                      </td>
+                      <td className="p-4 font-mono text-yellow-500">#{order.displayId || order.id.slice(0,5)}</td>
                       
                       <td className="p-4">
                         {order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : '-'}
@@ -140,13 +144,14 @@ const Admin = () => {
                       
                       <td className="p-4 max-w-xs">
                         {order.items?.map((item, i) => (
-                           <span key={i} className="block text-xs">
-                             {item.quantity}x {item.name}
-                           </span>
+                           <span key={i} className="block text-xs">{item.quantity}x {item.name}</span>
                         ))}
                       </td>
-                      
-                      <td className="p-4 text-white font-bold">₹{order.amount}</td>
+
+                      {/* --- NEW: TRACKING COLUMN --- */}
+                      <td className="p-4 font-mono text-xs text-gray-300">
+                        {order.trackingId || "-"}
+                      </td>
                       
                       <td className="p-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold uppercase
@@ -156,13 +161,21 @@ const Admin = () => {
                         </span>
                       </td>
                       
+                      {/* --- UPDATED ACTIONS --- */}
                       <td className="p-4">
-                        {order.status !== 'Shipped' && (
+                        {order.status !== 'Shipped' ? (
                           <button 
                             onClick={() => handleMarkShipped(order)}
                             className="bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold hover:bg-white"
                           >
                             Mark Shipped
+                          </button>
+                        ) : (
+                          <button 
+                             onClick={() => handleUpdateTracking(order)}
+                             className="text-yellow-500 underline text-xs font-bold hover:text-white"
+                          >
+                            Edit Tracking
                           </button>
                         )}
                       </td>
@@ -173,7 +186,6 @@ const Admin = () => {
               </table>
             </div>
           </div>
-
         </div>
       </div>
     </Layout>

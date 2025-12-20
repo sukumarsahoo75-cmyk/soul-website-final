@@ -72,15 +72,18 @@ const Profile = () => {
                 <div key={order.id} className="bg-gray-900 p-6 rounded-lg border border-gray-800">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      {/* --- FIX IS HERE: Show displayId if it exists, otherwise show old ID --- */}
+                      {/* Show Friendly ID (1003) if available */}
                       <h3 className="text-xl font-bold text-yellow-500">
                         Order #{order.displayId || order.id.slice(0, 8).toUpperCase()}
                       </h3>
                       <p className="text-xs text-gray-500 mt-1">
-                        Date: {order.createdAt?.toDate().toLocaleDateString()}
+                        Date: {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString() : new Date(order.createdAt.seconds * 1000).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="bg-green-900 text-green-300 text-xs px-2 py-1 rounded uppercase tracking-wider font-bold">
+
+                    {/* Dynamic Status Color */}
+                    <span className={`text-xs px-2 py-1 rounded uppercase tracking-wider font-bold 
+                      ${order.status === 'Shipped' ? 'bg-green-900 text-green-300' : 'bg-blue-900 text-blue-300'}`}>
                       {order.status || "Paid"}
                     </span>
                   </div>
@@ -95,7 +98,15 @@ const Profile = () => {
                   </div>
 
                   <div className="border-t border-gray-800 pt-4 flex justify-between items-center">
-                    <p className="text-xs text-gray-500">Tracking ID: {order.paymentId}</p>
+                    <div className="text-xs text-gray-500">
+                       {/* --- NEW: Show Tracking ID if it exists --- */}
+                       {order.trackingId && (
+                         <p className="mb-2 text-yellow-500 font-bold text-sm border border-yellow-500/30 p-1 rounded bg-yellow-500/10 inline-block">
+                           🚚 Tracking: {order.trackingId}
+                         </p>
+                       )}
+                       <p className="mt-1">Payment Ref: {order.paymentId}</p>
+                    </div>
                     <p className="text-xl font-bold text-white">Total: ₹{order.amount}</p>
                   </div>
                 </div>
