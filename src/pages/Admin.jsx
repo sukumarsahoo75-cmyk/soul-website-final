@@ -67,7 +67,7 @@ const Admin = () => {
 
       // USE YOUR EMAILJS SERVICE ID & TEMPLATE ID HERE
       // Make sure you have a template for "Order Shipped" or use the generic one
-      await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
+      await emailjs.send('service_6kjfm2h', 'template_jzthsni', emailParams, 'LlIP1132QrVkXTpfk');
 
       alert(`Order #${order.displayId} marked as Shipped & Email Sent!`);
       fetchOrders(); // Refresh list to show green badge
