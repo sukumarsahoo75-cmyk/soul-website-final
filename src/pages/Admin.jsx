@@ -4,13 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { collection, getDocs, updateDoc, doc, orderBy, query } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 
 const Admin = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
-  // --- 🔒 SECURITY CHECK ---
-  // REPLACE THIS WITH YOUR EXACT GOOGLE LOGIN EMAIL
+  // 🔒 SECURITY CHECK
   const ADMIN_EMAIL = "soulfragranceindia@gmail.com"; 
 
   const [orders, setOrders] = useState([]);
@@ -20,10 +20,8 @@ const Admin = () => {
   useEffect(() => {
     // 1. Check if user is admin
     if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
-      // If not admin, kick them out
       return; 
     }
-
     fetchOrders();
   }, [currentUser, navigate]);
 
@@ -49,14 +47,34 @@ const Admin = () => {
     setLoading(false);
   };
 
-  const updateStatus = async (orderId, newStatus) => {
+  // --- UPDATED: MARK SHIPPED + SEND EMAIL ---
+  const handleMarkShipped = async (order) => {
+    if (!window.confirm(`Mark Order #${order.displayId} as Shipped? This will email the customer.`)) return;
+
     try {
-      const orderRef = doc(db, "orders", orderId);
-      await updateDoc(orderRef, { status: newStatus });
-      alert("Status updated!");
-      fetchOrders(); // Refresh list
+      // 1. Update Firestore Status
+      const orderRef = doc(db, "orders", order.id);
+      await updateDoc(orderRef, { status: 'Shipped' });
+
+      // 2. Send "Dispatched" Email
+      const emailParams = {
+        to_name: order.shippingDetails.fullName,
+        to_email: order.shippingDetails.email,
+        order_id: order.displayId, // Using the friendly ID (e.g. 1003)
+        message: "Your order has been dispatched and is on its way!",
+        courier_name: "Standard Shipping" // You can customize this if you have tracking info
+      };
+
+      // USE YOUR EMAILJS SERVICE ID & TEMPLATE ID HERE
+      // Make sure you have a template for "Order Shipped" or use the generic one
+      await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
+
+      alert(`Order #${order.displayId} marked as Shipped & Email Sent!`);
+      fetchOrders(); // Refresh list to show green badge
+
     } catch (error) {
       console.error("Error updating status:", error);
+      alert("Failed to update status or send email.");
     }
   };
 
@@ -117,8 +135,9 @@ const Admin = () => {
                   {orders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-800/50 transition">
                       
+                      {/* 1. FIXED: Show "displayId" (1003) instead of random ID */}
                       <td className="p-4 font-mono text-yellow-500">
-                        #{order.orderNumber || order.id.slice(0,5)}
+                        #{order.displayId || order.id.slice(0,5)}
                       </td>
                       
                       <td className="p-4">
@@ -151,7 +170,7 @@ const Admin = () => {
                       <td className="p-4">
                         {order.status !== 'Shipped' && (
                           <button 
-                            onClick={() => updateStatus(order.id, 'Shipped')}
+                            onClick={() => handleMarkShipped(order)}
                             className="bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold hover:bg-white"
                           >
                             Mark Shipped
