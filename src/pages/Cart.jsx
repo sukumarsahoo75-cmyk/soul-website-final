@@ -11,8 +11,8 @@ const Cart = () => {
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
-  // Free Shipping logic (Cap at 1000)
-  const shippingCost = total >= 1000 ? 0 : 99;
+  // Free Shipping logic (Cap at 999)
+  const shippingCost = total >= 999 ? 0 : 99;
   const finalTotal = total + shippingCost;
 
   const handleCheckout = () => {
@@ -82,12 +82,12 @@ const Cart = () => {
                 </div>
                 
                 {/* Free Shipping Progress Bar */}
-                {total < 1000 && (
+                {total < 999 && (
                   <div className="mb-4">
                     <div className="w-full bg-gray-800 h-1 rounded-full">
-                      <div className="bg-yellow-500 h-1 rounded-full" style={{ width: `${(total/1000)*100}%` }}></div>
+                      <div className="bg-yellow-500 h-1 rounded-full" style={{ width: `${(total/999)*100}%` }}></div>
                     </div>
-                    <p className="text-[10px] text-gray-500 mt-1 text-center">Add ₹{1000 - total} more for Free Shipping</p>
+                    <p className="text-[10px] text-gray-500 mt-1 text-center">Add ₹{999 - total} more for Free Shipping</p>
                   </div>
                 )}
 

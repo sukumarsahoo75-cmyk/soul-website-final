@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom'; // <--- ADDED useNavigate
 import Layout from '../components/Layout';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { products } from '../data';
 import { db } from '../firebase';
-// --- ADDED: doc, deleteDoc, updateDoc ---
 import { collection, addDoc, query, where, getDocs, Timestamp, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
 const StarRating = ({ rating }) => {
@@ -22,6 +21,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { dispatch } = useCart();
   const { currentUser } = useAuth();
+  const navigate = useNavigate(); // <--- INITIALIZE NAVIGATE
   
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('details');
@@ -30,7 +30,7 @@ const ProductDetail = () => {
   const [newReview, setNewReview] = useState('');
   const [rating, setRating] = useState(5);
   
-  // --- NEW: TRACK WHICH REVIEW IS BEING EDITED ---
+  // TRACK WHICH REVIEW IS BEING EDITED
   const [editingId, setEditingId] = useState(null);
 
   const product = products.find(p => p.id === parseInt(id));
@@ -55,7 +55,7 @@ const ProductDetail = () => {
     }
   };
 
-  // --- SUBMIT (ADD OR UPDATE) ---
+  // SUBMIT (ADD OR UPDATE)
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!currentUser) return alert("Please login to review");
@@ -63,17 +63,16 @@ const ProductDetail = () => {
 
     try {
       if (editingId) {
-        // --- UPDATE EXISTING REVIEW ---
+        // UPDATE EXISTING REVIEW
         const reviewRef = doc(db, "reviews", editingId);
         await updateDoc(reviewRef, {
           text: newReview,
           rating: rating,
-          // We don't update createdAt so it keeps original date
         });
         alert("Review updated successfully!");
-        setEditingId(null); // Stop editing mode
+        setEditingId(null); 
       } else {
-        // --- ADD NEW REVIEW ---
+        // ADD NEW REVIEW
         await addDoc(collection(db, "reviews"), {
           productId: parseInt(id),
           user: currentUser.email.split('@')[0],
@@ -94,12 +93,12 @@ const ProductDetail = () => {
     }
   };
 
-  // --- DELETE FUNCTION ---
+  // DELETE FUNCTION
   const handleDelete = async (reviewId) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
         await deleteDoc(doc(db, "reviews", reviewId));
-        fetchReviews(); // Refresh list
+        fetchReviews(); 
       } catch (error) {
         console.error("Error deleting review:", error);
         alert("Failed to delete review.");
@@ -107,21 +106,26 @@ const ProductDetail = () => {
     }
   };
 
-  // --- EDIT FUNCTION (Populate Form) ---
+  // EDIT FUNCTION
   const handleEdit = (review) => {
     setNewReview(review.text);
     setRating(review.rating);
     setEditingId(review.id);
-    // Scroll to form (optional UX improvement)
     document.getElementById('review-form').scrollIntoView({ behavior: 'smooth' });
   };
 
+  // --- UPDATED ADD TO CART FUNCTION ---
   const addToCart = () => {
     dispatch({ 
       type: 'ADD_ITEM', 
       payload: { ...product, quantity, selectedSize: "50ml", price: product.price } 
     });
+    
+    // 1. Show alert
     alert(`Added ${quantity} x ${product.name} to cart!`);
+    
+    // 2. Redirect to Checkout immediately after user clicks OK
+    navigate('/checkout'); 
   };
 
   if (!product) return <Layout><div className="text-center p-20 text-white">Product Not Found</div></Layout>;
@@ -166,9 +170,9 @@ const ProductDetail = () => {
 
               <div className="flex space-x-4 h-14">
                  <div className="flex items-center border border-gray-700 rounded bg-black">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-l" disabled={!product.inStock}>-</button>
-                    <span className="px-5 text-white font-bold text-lg">{quantity}</span>
-                    <button onClick={() => setQuantity(quantity + 1)} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-r" disabled={!product.inStock}>+</button>
+                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-l" disabled={!product.inStock}>-</button>
+                   <span className="px-5 text-white font-bold text-lg">{quantity}</span>
+                   <button onClick={() => setQuantity(quantity + 1)} className="px-5 text-yellow-500 text-2xl hover:bg-gray-800 h-full rounded-r" disabled={!product.inStock}>+</button>
                  </div>
                  {product.inStock ? (
                    <button onClick={addToCart} className="flex-1 bg-yellow-500 text-black font-bold uppercase tracking-widest text-lg rounded hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)]">Add to Cart</button>
@@ -273,8 +277,8 @@ const ProductDetail = () => {
                   </form>
                 ) : (
                   <div className="text-center mb-10 bg-gray-900 p-6 rounded border border-gray-800">
-                     <p className="text-gray-400 mb-4">Please login to write a review.</p>
-                     <Link to="/login" className="text-yellow-500 underline hover:text-white font-bold">Login Here</Link>
+                      <p className="text-gray-400 mb-4">Please login to write a review.</p>
+                      <Link to="/login" className="text-yellow-500 underline hover:text-white font-bold">Login Here</Link>
                   </div>
                 )}
 
@@ -284,7 +288,7 @@ const ProductDetail = () => {
                     (reviews.length > 0 ? reviews : product.reviews).map((review, index) => (
                     <div key={index} className="bg-gray-900 p-6 rounded border border-gray-800 relative group">
                         
-                        {/* --- DELETE & EDIT BUTTONS (Only visible for the author) --- */}
+                        {/* DELETE & EDIT BUTTONS (Only visible for the author) */}
                         {currentUser && review.userId === currentUser.uid && (
                           <div className="absolute top-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button 

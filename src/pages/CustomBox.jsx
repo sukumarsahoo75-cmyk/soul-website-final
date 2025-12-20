@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { products } from '../data'; 
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom'; // <--- ADDED useNavigate
 
 const CustomBox = () => {
   const [selectedScents, setSelectedScents] = useState([]);
   const { dispatch } = useCart();
+  const navigate = useNavigate(); // <--- INITIALIZE NAVIGATE
   
   const toggleSelection = (product) => {
     // 1. Prevent selecting if out of stock
@@ -34,7 +36,12 @@ const CustomBox = () => {
         description: `Contains: ${selectedScents.map(p => p.name).join(", ")}`
       }
     });
+    
+    // 1. Show Popup
     alert("Discovery Box added to Cart!");
+    
+    // 2. Redirect to Checkout
+    navigate('/checkout'); 
   };
 
   return (
@@ -100,7 +107,7 @@ const CustomBox = () => {
                   </div>
                 )}
 
-                {/* --- NEW: "SOLD OUT" BADGE --- */}
+                {/* --- "SOLD OUT" BADGE --- */}
                 {isOutOfStock && (
                   <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40">
                     <span className="bg-red-600/90 text-white px-4 py-1 text-sm font-bold uppercase tracking-widest rounded shadow-lg transform -rotate-12 border border-red-400 backdrop-blur-sm">

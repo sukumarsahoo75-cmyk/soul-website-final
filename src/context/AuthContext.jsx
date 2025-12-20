@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebase';
+// --- FIX 1: ADD GoogleAuthProvider AND signInWithPopup TO IMPORTS ---
 import { 
   onAuthStateChanged, 
   signOut, 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,     // <--- NEW
+  signInWithPopup         // <--- NEW
 } from 'firebase/auth';
 
 const AuthContext = createContext();
@@ -25,6 +28,12 @@ export const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
+  // --- FIX 2: ADD GOOGLE LOGIN FUNCTION ---
+  const loginWithGoogle = () => {
+    const provider = new GoogleAuthProvider();
+    return signInWithPopup(auth, provider);
+  };
+
   // 3. LOGOUT FUNCTION
   const logout = () => {
     return signOut(auth);
@@ -42,7 +51,8 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     signup,
     login,
-    logout
+    logout,
+    loginWithGoogle // --- FIX 3: EXPORT THE FUNCTION ---
   };
 
   return (

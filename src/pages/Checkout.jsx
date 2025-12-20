@@ -15,7 +15,7 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shippingCost = total >= 1000 ? 0 : 99;
+  const shippingCost = total >= 999 ? 0 : 99;
   const totalAmount = total + shippingCost;
 
   const [shippingDetails, setShippingDetails] = useState({
