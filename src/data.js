@@ -31,7 +31,7 @@ export const products = [
   },
   { 
     id: 4, name: "Divine", category: "for-her", price: 599, image: "/images/divine.jpg",
-    inStock: false,
+    inStock: true,
     description: "A powerful aromatic vanilla scent. Three distinct vanillas wrapped in bright lavender create a warm, glowing aura.",
     inspiration: "Captures the golden vanilla allure of Burberry Goddess.",
     notes: { top: "Vanilla Infusion, Lavender", mid: "Vanilla Caviar", base: "Vanilla Absolute, Ginger" },
@@ -125,7 +125,7 @@ export const products = [
   },
   { 
     id: 14, name: "Fruit Absolu", category: "unisex", price: 599, image: "/images/fruit-absolu.jpg",
-    inStock: false,
+    inStock: true,
     description: "A basket of Mediterranean fruits. Sweet citrus, bright berries, and a soft musk base create a joyful, vibrant aura.",
     inspiration: "A fruity explosion reminiscent of Xerjoff Erba Pura.",
     notes: { top: "Orange, Lemon, Bergamot", mid: "Fruit Basket", base: "White Musk, Amber, Vanilla" },
@@ -143,7 +143,7 @@ export const products = [
   },
   { 
     id: 16, name: "Mystic", category: "unisex", price: 599, image: "/images/mystic.jpg",
-    inStock: false,
+    inStock: true,
     description: "An olfactory phenomenon. Bright, sweet, and airy, yet incredibly long-lasting. It smells like crystallized sugar and ambergris.",
     inspiration: "Inspired by the legendary Baccarat Rouge 540.",
     notes: { top: "Saffron, Jasmine", mid: "Amberwood", base: "Fir Resin, Cedar" },
