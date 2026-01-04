@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 // IMPORT RUNTRANSACTION AND DOC
-import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs, runTransaction, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs, runTransaction, doc, serverTimestamp } from 'firebase/firestore';
 // IMPORT EMAILJS
 import emailjs from '@emailjs/browser';
 
@@ -28,7 +28,7 @@ const Checkout = () => {
     state: ''
   });
 
-  // Fetch last address logic (Same as before)
+  // Fetch last address logic
   useEffect(() => {
     const fetchLastAddress = async () => {
       if (currentUser) {
@@ -62,51 +62,44 @@ const Checkout = () => {
   const handlePayment = async (e) => {
     e.preventDefault();
 
-    // --- SECURITY FIX: FORCE LOGIN BEFORE PAYMENT STARTS ---
+    // 1. CHECK LOGIN
     if (!currentUser) {
         alert("You must be logged in to place an order.");
-        navigate('/login', { state: { from: '/checkout' } }); // Redirects to login, then back to checkout
+        navigate('/login', { state: { from: '/checkout' } });
         return;
     }
 
     try {
-      // 1. Create Razorpay Order
-      const response = await fetch('/api/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: totalAmount * 100 }),
-      });
-      const orderData = await response.json();
-
-      if (!orderData.id) {
-        alert("Server error creating order.");
+      // 2. CHECK RAZORPAY SCRIPT
+      if (!window.Razorpay) {
+        alert("Razorpay SDK failed to load. Please check your internet connection.");
         return;
       }
 
-      // 2. Open Razorpay
+      // 3. DEFINE OPTIONS (Client-Side Mode)
+      // We removed the fetch('/api/order') call because you don't have a backend server.
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
-        amount: orderData.amount, 
-        currency: orderData.currency,
+        amount: totalAmount * 100, // Amount in paise (e.g. 25000 = ₹250)
+        currency: "INR",
         name: "Soul Fragrance",
         description: "Luxury Perfume Order",
         image: "https://soulfragrance.in/logo.png",
-        order_id: orderData.id, 
+        // order_id: ... REMOVED (Not needed for client-side only)
         
         handler: async function (response) {
           try {
-            // --- NEW: GENERATE SERIAL ID & SAVE ORDER ---
+            // --- GENERATE SERIAL ID & SAVE ORDER ---
             let displayOrderId = "ERROR";
 
             await runTransaction(db, async (transaction) => {
-                // 1. Read the counter
+                // A. Read the counter
                 const counterRef = doc(db, "counters", "orderCounter");
                 const counterDoc = await transaction.get(counterRef);
                 
                 let newCount;
 
                 if (!counterDoc.exists()) {
-                    // Auto-create counter if missing to prevent crashes
                     newCount = 1001;
                     transaction.set(counterRef, { currentSequence: 1001 });
                 } else {
@@ -114,24 +107,23 @@ const Checkout = () => {
                     transaction.update(counterRef, { currentSequence: newCount });
                 }
 
-                displayOrderId = String(newCount).padStart(4, '0'); // Makes it 1001, 1002, etc.
+                displayOrderId = String(newCount).padStart(4, '0'); // Makes it 1001
 
-                // 2. Save the Order with the new ID
+                // B. Save the Order
                 const newOrderRef = doc(collection(db, "orders"));
                 transaction.set(newOrderRef, {
-                    userId: currentUser.uid, // This line is safe now because we checked currentUser above
+                    userId: currentUser.uid,
                     displayId: displayOrderId, 
                     items: cart,
                     amount: totalAmount,
                     shippingDetails: shippingDetails,
                     paymentId: response.razorpay_payment_id,
-                    razorpayOrderId: response.razorpay_order_id,
-                    status: "Paid",
+                    status: "Paid", // Confirmed payment
                     createdAt: serverTimestamp()
                 });
             });
 
-            // --- NEW: SEND EMAIL ---
+            // --- SEND EMAIL ---
             const emailParams = {
                 customer_name: shippingDetails.fullName,
                 order_id: displayOrderId, 
@@ -139,16 +131,17 @@ const Checkout = () => {
                 address: `${shippingDetails.address}, ${shippingDetails.city}`,
                 to_email: shippingDetails.email 
             };
-
+            
+            // Note: Ensure your EmailJS service/template IDs are correct
             await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
 
+            // --- SUCCESS ---
             dispatch({ type: "CLEAR_CART" });
             navigate('/order-success', { state: { orderId: displayOrderId } });
 
           } catch (error) {
             console.error("Error saving order:", error);
-            // Critical error: Money taken, but order failed.
-            alert(`Payment ID: ${response.razorpay_payment_id}. Order save failed. Please contact support with this ID.`);
+            alert(`Payment successful (ID: ${response.razorpay_payment_id}), but order saving failed. Screenshot this and contact support.`);
           }
         },
         prefill: {
@@ -164,7 +157,7 @@ const Checkout = () => {
 
     } catch (error) {
       console.error("Payment Error:", error);
-      alert("Something went wrong.");
+      alert("Something went wrong initializing payment. Check console for details.");
     }
   };
 

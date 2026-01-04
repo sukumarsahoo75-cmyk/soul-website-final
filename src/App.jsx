@@ -21,6 +21,7 @@ import OrderSuccess from './pages/OrderSuccess'; // <--- NEW IMPORT
 
 // --- Custom Collections ---
 import CustomBox from './pages/CustomBox';
+import Samples from './pages/Samples'; // <--- NEW IMPORT
 import Unisex from './pages/Unisex';
 import SignatureCollection from './pages/SignatureCollection';
 
@@ -52,6 +53,7 @@ function App() {
         <Route path="/signature" element={<SignatureCollection />} />
         <Route path="/gift-sets" element={<GiftSets />} />
         <Route path="/custom-box" element={<CustomBox />} />
+        <Route path="/samples" element={<Samples />} /> {/* <--- NEW ROUTE */}
 
         {/* 4. Product Details */}
         <Route path="/product/:id" element={<ProductDetail />} />
