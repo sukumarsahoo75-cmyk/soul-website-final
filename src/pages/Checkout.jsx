@@ -4,9 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-// IMPORT RUNTRANSACTION AND DOC
 import { collection, query, where, orderBy, limit, getDocs, runTransaction, doc, serverTimestamp } from 'firebase/firestore';
-// IMPORT EMAILJS
 import emailjs from '@emailjs/browser';
 
 const Checkout = () => {
@@ -28,7 +26,9 @@ const Checkout = () => {
     state: ''
   });
 
-  // Fetch last address logic
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Fetch last address
   useEffect(() => {
     const fetchLastAddress = async () => {
       if (currentUser) {
@@ -61,58 +61,59 @@ const Checkout = () => {
 
   const handlePayment = async (e) => {
     e.preventDefault();
-
-    // 1. CHECK LOGIN
     if (!currentUser) {
         alert("You must be logged in to place an order.");
         navigate('/login', { state: { from: '/checkout' } });
         return;
     }
 
+    setIsProcessing(true);
+
     try {
-      // 2. CHECK RAZORPAY SCRIPT
       if (!window.Razorpay) {
-        alert("Razorpay SDK failed to load. Please check your internet connection.");
+        alert("Razorpay SDK failed to load. Please refresh.");
+        setIsProcessing(false);
         return;
       }
 
-      // 3. DEFINE OPTIONS
+      // --- FINAL CONFIGURATION ---
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
         amount: totalAmount * 100, 
         currency: "INR",
         name: "Soul Fragrance",
-        description: "Luxury Perfume Order",
+        description: "Payment for Order",
         image: "https://soulfragrance.in/logo.png",
         
-        // --- THE FIX: FORCE AUTO-CAPTURE VIA CODE ---
-        // This line tells Razorpay: "Capture this immediately, do not wait."
+        // --- FORCE CAPTURE COMMANDS ---
         payment_capture: 1, 
-        // --------------------------------------------
-        
+        // ------------------------------
+
+        prefill: {
+          name: shippingDetails.fullName,
+          email: shippingDetails.email,
+          contact: shippingDetails.phone
+        },
+        notes: {
+          address: "Online Order"
+        },
+        theme: { color: "#EAB308" },
+
         handler: async function (response) {
           try {
-            // --- GENERATE SERIAL ID & SAVE ORDER ---
+            // SUCCESSFUL PAYMENT -> NOW SAVE TO FIREBASE
             let displayOrderId = "ERROR";
 
             await runTransaction(db, async (transaction) => {
-                // A. Read the counter
                 const counterRef = doc(db, "counters", "orderCounter");
                 const counterDoc = await transaction.get(counterRef);
                 
-                let newCount;
+                let newCount = counterDoc.exists() ? counterDoc.data().currentSequence + 1 : 1001;
+                if (!counterDoc.exists()) transaction.set(counterRef, { currentSequence: 1001 });
+                else transaction.update(counterRef, { currentSequence: newCount });
 
-                if (!counterDoc.exists()) {
-                    newCount = 1001;
-                    transaction.set(counterRef, { currentSequence: 1001 });
-                } else {
-                    newCount = counterDoc.data().currentSequence + 1;
-                    transaction.update(counterRef, { currentSequence: newCount });
-                }
+                displayOrderId = String(newCount).padStart(4, '0');
 
-                displayOrderId = String(newCount).padStart(4, '0'); 
-
-                // B. Save the Order
                 const newOrderRef = doc(collection(db, "orders"));
                 transaction.set(newOrderRef, {
                     userId: currentUser.uid,
@@ -126,7 +127,7 @@ const Checkout = () => {
                 });
             });
 
-            // --- SEND EMAIL ---
+            // SEND EMAIL
             const emailParams = {
                 customer_name: shippingDetails.fullName,
                 order_id: displayOrderId, 
@@ -137,29 +138,29 @@ const Checkout = () => {
             
             await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
 
-            // --- SUCCESS ---
             dispatch({ type: "CLEAR_CART" });
             navigate('/order-success', { state: { orderId: displayOrderId } });
 
           } catch (error) {
-            console.error("Error saving order:", error);
-            alert(`Payment successful (ID: ${response.razorpay_payment_id}), but order saving failed. Screenshot this and contact support.`);
+            console.error("Critical Error:", error);
+            alert(`Payment ID: ${response.razorpay_payment_id} was successful, but saving order failed. Please contact us.`);
+          } finally {
+            setIsProcessing(false);
           }
-        },
-        prefill: {
-          name: shippingDetails.fullName,
-          email: shippingDetails.email,
-          contact: shippingDetails.phone
-        },
-        theme: { color: "#EAB308" }
+        }
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response){
+        alert("Payment Failed: " + response.error.description);
+        setIsProcessing(false);
+      });
       rzp.open();
 
     } catch (error) {
-      console.error("Payment Error:", error);
-      alert("Something went wrong initializing payment. Check console for details.");
+      console.error("Payment Init Error:", error);
+      alert("Something went wrong initializing payment.");
+      setIsProcessing(false);
     }
   };
 
@@ -198,7 +199,15 @@ const Checkout = () => {
                 <div className="flex justify-between text-gray-400"><span>Shipping</span><span>{shippingCost === 0 ? "FREE" : `₹${shippingCost}`}</span></div>
                 <div className="flex justify-between text-xl font-bold text-yellow-500 pt-2"><span>Total To Pay</span><span>₹{totalAmount}</span></div>
               </div>
-              <button type="submit" form="checkout-form" className="w-full mt-6 bg-yellow-500 text-black py-4 font-bold uppercase tracking-widest hover:bg-white transition shadow-lg hover:shadow-yellow-500/20">Pay Now</button>
+              <button 
+                type="submit" 
+                form="checkout-form" 
+                disabled={isProcessing}
+                className={`w-full mt-6 py-4 font-bold uppercase tracking-widest transition shadow-lg 
+                  ${isProcessing ? 'bg-gray-700 text-gray-400 cursor-wait' : 'bg-yellow-500 text-black hover:bg-white hover:shadow-yellow-500/20'}`}
+              >
+                {isProcessing ? "Processing..." : "Pay Now"}
+              </button>
             </div>
           </div>
         </div>
