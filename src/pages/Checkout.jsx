@@ -4,7 +4,9 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, query, where, orderBy, limit, getDocs, runTransaction, doc, serverTimestamp } from 'firebase/firestore';
+// IMPORT RUNTRANSACTION AND DOC
+import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs, runTransaction, doc } from 'firebase/firestore';
+// IMPORT EMAILJS
 import emailjs from '@emailjs/browser';
 
 const Checkout = () => {
@@ -26,9 +28,7 @@ const Checkout = () => {
     state: ''
   });
 
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  // Fetch last address
+  // Fetch last address logic (Same as before)
   useEffect(() => {
     const fetchLastAddress = async () => {
       if (currentUser) {
@@ -61,73 +61,77 @@ const Checkout = () => {
 
   const handlePayment = async (e) => {
     e.preventDefault();
+
+    // --- SECURITY FIX: FORCE LOGIN BEFORE PAYMENT STARTS ---
     if (!currentUser) {
         alert("You must be logged in to place an order.");
-        navigate('/login', { state: { from: '/checkout' } });
+        navigate('/login', { state: { from: '/checkout' } }); // Redirects to login, then back to checkout
         return;
     }
 
-    setIsProcessing(true);
-
     try {
-      if (!window.Razorpay) {
-        alert("Razorpay SDK failed to load. Please refresh.");
-        setIsProcessing(false);
+      // 1. Create Razorpay Order
+      const response = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: totalAmount * 100 }),
+      });
+      const orderData = await response.json();
+
+      if (!orderData.id) {
+        alert("Server error creating order.");
         return;
       }
 
-      // --- FINAL CONFIGURATION ---
+      // 2. Open Razorpay
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
-        amount: totalAmount * 100, 
-        currency: "INR",
+        amount: orderData.amount, 
+        currency: orderData.currency,
         name: "Soul Fragrance",
-        description: "Payment for Order",
+        description: "Luxury Perfume Order",
         image: "https://soulfragrance.in/logo.png",
+        order_id: orderData.id, 
         
-        // --- FORCE CAPTURE COMMANDS ---
-        payment_capture: 1, 
-        // ------------------------------
-
-        prefill: {
-          name: shippingDetails.fullName,
-          email: shippingDetails.email,
-          contact: shippingDetails.phone
-        },
-        notes: {
-          address: "Online Order"
-        },
-        theme: { color: "#EAB308" },
-
         handler: async function (response) {
           try {
-            // SUCCESSFUL PAYMENT -> NOW SAVE TO FIREBASE
+            // --- NEW: GENERATE SERIAL ID & SAVE ORDER ---
             let displayOrderId = "ERROR";
 
             await runTransaction(db, async (transaction) => {
+                // 1. Read the counter
                 const counterRef = doc(db, "counters", "orderCounter");
                 const counterDoc = await transaction.get(counterRef);
                 
-                let newCount = counterDoc.exists() ? counterDoc.data().currentSequence + 1 : 1001;
-                if (!counterDoc.exists()) transaction.set(counterRef, { currentSequence: 1001 });
-                else transaction.update(counterRef, { currentSequence: newCount });
+                let newCount;
 
-                displayOrderId = String(newCount).padStart(4, '0');
+                if (!counterDoc.exists()) {
+                    // Auto-create counter if missing to prevent crashes
+                    newCount = 1001;
+                    transaction.set(counterRef, { currentSequence: 1001 });
+                } else {
+                    newCount = counterDoc.data().currentSequence + 1;
+                    transaction.update(counterRef, { currentSequence: newCount });
+                }
 
+                displayOrderId = String(newCount).padStart(4, '0'); // Makes it 1001, 1002, etc.
+
+                // 2. Save the Order with the new ID
                 const newOrderRef = doc(collection(db, "orders"));
                 transaction.set(newOrderRef, {
-                    userId: currentUser.uid,
+                    userId: currentUser.uid, // This line is safe now because we checked currentUser above
                     displayId: displayOrderId, 
                     items: cart,
                     amount: totalAmount,
                     shippingDetails: shippingDetails,
                     paymentId: response.razorpay_payment_id,
-                    status: "Paid", 
+                    razorpayOrderId: response.razorpay_order_id,
+                    status: "Paid",
                     createdAt: serverTimestamp()
                 });
             });
 
-            // SEND EMAIL
+            // --- NEW: SEND EMAIL ---
             const emailParams = {
                 customer_name: shippingDetails.fullName,
                 order_id: displayOrderId, 
@@ -135,32 +139,32 @@ const Checkout = () => {
                 address: `${shippingDetails.address}, ${shippingDetails.city}`,
                 to_email: shippingDetails.email 
             };
-            
+
             await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
 
             dispatch({ type: "CLEAR_CART" });
             navigate('/order-success', { state: { orderId: displayOrderId } });
 
           } catch (error) {
-            console.error("Critical Error:", error);
-            alert(`Payment ID: ${response.razorpay_payment_id} was successful, but saving order failed. Please contact us.`);
-          } finally {
-            setIsProcessing(false);
+            console.error("Error saving order:", error);
+            // Critical error: Money taken, but order failed.
+            alert(`Payment ID: ${response.razorpay_payment_id}. Order save failed. Please contact support with this ID.`);
           }
-        }
+        },
+        prefill: {
+          name: shippingDetails.fullName,
+          email: shippingDetails.email,
+          contact: shippingDetails.phone
+        },
+        theme: { color: "#EAB308" }
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response){
-        alert("Payment Failed: " + response.error.description);
-        setIsProcessing(false);
-      });
       rzp.open();
 
     } catch (error) {
-      console.error("Payment Init Error:", error);
-      alert("Something went wrong initializing payment.");
-      setIsProcessing(false);
+      console.error("Payment Error:", error);
+      alert("Something went wrong.");
     }
   };
 
@@ -199,15 +203,7 @@ const Checkout = () => {
                 <div className="flex justify-between text-gray-400"><span>Shipping</span><span>{shippingCost === 0 ? "FREE" : `₹${shippingCost}`}</span></div>
                 <div className="flex justify-between text-xl font-bold text-yellow-500 pt-2"><span>Total To Pay</span><span>₹{totalAmount}</span></div>
               </div>
-              <button 
-                type="submit" 
-                form="checkout-form" 
-                disabled={isProcessing}
-                className={`w-full mt-6 py-4 font-bold uppercase tracking-widest transition shadow-lg 
-                  ${isProcessing ? 'bg-gray-700 text-gray-400 cursor-wait' : 'bg-yellow-500 text-black hover:bg-white hover:shadow-yellow-500/20'}`}
-              >
-                {isProcessing ? "Processing..." : "Pay Now"}
-              </button>
+              <button type="submit" form="checkout-form" className="w-full mt-6 bg-yellow-500 text-black py-4 font-bold uppercase tracking-widest hover:bg-white transition shadow-lg hover:shadow-yellow-500/20">Pay Now</button>
             </div>
           </div>
         </div>
