@@ -76,16 +76,19 @@ const Checkout = () => {
         return;
       }
 
-      // 3. DEFINE OPTIONS (Client-Side Mode)
-      // We removed the fetch('/api/order') call because you don't have a backend server.
+      // 3. DEFINE OPTIONS
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
-        amount: totalAmount * 100, // Amount in paise (e.g. 25000 = ₹250)
+        amount: totalAmount * 100, 
         currency: "INR",
         name: "Soul Fragrance",
         description: "Luxury Perfume Order",
         image: "https://soulfragrance.in/logo.png",
-        // order_id: ... REMOVED (Not needed for client-side only)
+        
+        // --- THE FIX: FORCE AUTO-CAPTURE VIA CODE ---
+        // This line tells Razorpay: "Capture this immediately, do not wait."
+        payment_capture: 1, 
+        // --------------------------------------------
         
         handler: async function (response) {
           try {
@@ -107,7 +110,7 @@ const Checkout = () => {
                     transaction.update(counterRef, { currentSequence: newCount });
                 }
 
-                displayOrderId = String(newCount).padStart(4, '0'); // Makes it 1001
+                displayOrderId = String(newCount).padStart(4, '0'); 
 
                 // B. Save the Order
                 const newOrderRef = doc(collection(db, "orders"));
@@ -118,7 +121,7 @@ const Checkout = () => {
                     amount: totalAmount,
                     shippingDetails: shippingDetails,
                     paymentId: response.razorpay_payment_id,
-                    status: "Paid", // Confirmed payment
+                    status: "Paid", 
                     createdAt: serverTimestamp()
                 });
             });
@@ -132,7 +135,6 @@ const Checkout = () => {
                 to_email: shippingDetails.email 
             };
             
-            // Note: Ensure your EmailJS service/template IDs are correct
             await emailjs.send('service_6kjfm2h', 'template_k1bkxfj', emailParams, 'LlIP1132QrVkXTpfk');
 
             // --- SUCCESS ---
