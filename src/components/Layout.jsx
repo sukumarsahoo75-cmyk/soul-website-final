@@ -63,21 +63,23 @@ const Layout = ({ children }) => {
             <Link to="/unisex" className={isActive('/unisex')}>Unisex</Link>
             <Link to="/all-products" className={isActive('/all-products')}>All Products</Link>
             
-            {/* Custom Box Button (NOW ON LEFT) */}
-            <Link 
-              to="/custom-box" 
-              className="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold"
-            >
-              Make Your Own Gift Set
-            </Link>
+            <div className="flex gap-4 mt-4 md:mt-0">
+                {/* Custom Box Button (Left) */}
+                <Link 
+                to="/custom-box" 
+                className="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold text-[10px] md:text-xs"
+                >
+                Make Your Own Gift Set
+                </Link>
 
-            {/* Buy Samples Button (NOW ON RIGHT) */}
-            <Link 
-              to="/samples" 
-              className="hidden md:inline-block border border-gray-600 text-gray-300 px-4 py-2 rounded text-[10px] md:text-xs font-bold uppercase tracking-widest hover:border-white hover:text-white transition"
-            >
-              Buy Samples
-            </Link>
+                {/* Buy Samples Button (Right - NOW VISIBLE ON MOBILE) */}
+                <Link 
+                to="/samples" 
+                className="inline-block border border-gray-600 text-gray-300 px-4 py-2 rounded text-[10px] md:text-xs font-bold uppercase tracking-widest hover:border-white hover:text-white transition"
+                >
+                Buy Samples
+                </Link>
+            </div>
 
           </div>
 
