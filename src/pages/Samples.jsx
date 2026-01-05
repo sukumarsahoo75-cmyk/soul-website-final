@@ -49,7 +49,7 @@ const Samples = () => {
           id: "sample-pack-" + Date.now(), // Unique ID so you can add multiple different packs
           name: "Discovery Sample Pack (10 x 2ml)",
           price: BOX_PRICE,
-          image: "/images/hero2.jpg", 
+          image: "/images/hero5.jpg", 
           quantity: 1,
           category: "Sample Set",
           selectedSize: "2ml Vial",
@@ -74,7 +74,7 @@ const Samples = () => {
         {/* --- HERO SECTION --- */}
         <div className="relative h-[40vh] bg-gray-900 flex items-center justify-center overflow-hidden">
           <img 
-            src="/images/hero2.jpg" 
+            src="/images/hero5.jpg" 
             alt="Perfume Samples" 
             className="absolute inset-0 w-full h-full object-cover opacity-50"
           />
