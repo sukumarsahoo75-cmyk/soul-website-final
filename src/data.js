@@ -4,7 +4,7 @@ export const products = [
   // --- FOR HER (1-4) ---
   { 
     id: 1, name: "Blossom", category: "for-her", price: 599, image: "/images/blossom.jpg",
-    inStock: true, // <--- NEW FIELD
+    inStock: true,
     description: "A gorgeous gardenia-based floral scent that feels like a spring garden in full bloom. Cheerful, pear-sweetened, and beautifully feminine.",
     inspiration: "A floral masterpiece comparable to Gucci Flora.",
     notes: { top: "Pear, Red Berries", mid: "Gardenia, Frangipani", base: "Patchouli, Brown Sugar" },
@@ -77,7 +77,7 @@ export const products = [
     rating: 0, reviews: []
   },
 
-  // --- UNISEX (9-18) ---
+  // --- UNISEX (9-20) ---
   { 
     id: 9, name: "Oud Intense", category: "unisex", price: 599, image: "/images/oud-intense.jpg", isSignature: true,
     inStock: true,
@@ -134,11 +134,11 @@ export const products = [
   },
   { 
     id: 15, name: "Toxic", category: "unisex", price: 599, image: "/images/toxic.jpg",
-    inStock: false,
-    description: "Loud. Unapologetic. A firestorm of spices, tobacco, and oud. Not for the faint of heart, this is a statement maker.",
-    inspiration: "A beast-mode tobacco scent comparable to Mancera Red Tobacco.",
-    notes: { top: "Cinnamon, Agarwood, Saffron", mid: "Patchouli, Jasmine", base: "Tobacco, Vanilla, Sandalwood" },
-    specs: { gender: "Unisex (Leans Masculine)", weather: "Winter (Strictly)", time: "Night/Outdoor", longevity: "12+ Hours", projection: "1.5-2 Hours" },
+    inStock: true,
+    description: "Opulent. Warm. Iconic. A smooth, sweet blend of rich tobacco leaf and creamy vanilla that exudes pure wealth and confidence.",
+    inspiration: "Comparable to the iconic Tom Ford Tobacco Vanille.",
+    notes: { top: "Tobacco Leaf, Spices", mid: "Vanilla, Cacao, Tonka Bean", base: "Dried Fruits, Woody Notes" },
+    specs: { gender: "Unisex", weather: "Winter/Autumn", time: "Evening/Night", longevity: "9-11 Hours", projection: "1.5-2 Hours" },
     rating: 0, reviews: []
   },
   { 
@@ -166,6 +166,24 @@ export const products = [
     inspiration: "Captures the boozy elegance of Kilian Angels' Share.",
     notes: { top: "Cognac", mid: "Cinnamon, Tonka Bean, Oak", base: "Praline, Vanilla, Sandalwood" },
     specs: { gender: "Unisex", weather: "Winter", time: "Evening/Date", longevity: "8-9 Hours", projection: "1.5-2 Hours" },
+    rating: 0, reviews: []
+  },
+  { 
+    id: 19, name: "Dusk", category: "unisex", price: 599, image: "/images/dusk.jpg",
+    inStock: true,
+    description: "Vast, untethered, and driven. A tactile, highly sensual leather fragrance accented by white florals and warm amber.",
+    inspiration: "Inspired by the raw elegance of Tom Ford Ombre Leather.",
+    notes: { top: "Cardamom", mid: "Leather, Jasmine Sambac", base: "Amber, Moss, Patchouli" },
+    specs: { gender: "Unisex (Leans Masculine)", weather: "Autumn/Winter", time: "Evening/Night", longevity: "8-10 Hours", projection: "1.5-2 Hours" },
+    rating: 0, reviews: []
+  },
+  { 
+    id: 20, name: "Fireplace", category: "unisex", price: 599, image: "/images/fireplace.jpg",
+    inStock: true,
+    description: "Comforting and warm. The smoky, woodsy scent of a crackling fire combined with the sweet, cozy aroma of roasting chestnuts.",
+    inspiration: "Captures the cozy warmth of Maison Margiela Replica By the Fireplace.",
+    notes: { top: "Cloves, Pink Pepper, Orange Blossom", mid: "Chestnut, Guaiac Wood, Juniper", base: "Vanilla, Peru Balsam, Cashmeran" },
+    specs: { gender: "Unisex", weather: "Winter/Autumn", time: "Evening/Cozy", longevity: "7-9 Hours", projection: "1.5-2 Hours" },
     rating: 0, reviews: []
   }
 ];
