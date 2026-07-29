@@ -17,6 +17,13 @@ const Layout = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-black text-white relative">
       
+      {/* --- NEW PROMO BANNER --- */}
+      <div className="bg-yellow-500 text-black text-center py-2 px-4 text-[10px] md:text-xs font-bold uppercase tracking-widest flex flex-col md:flex-row justify-center items-center gap-1 md:gap-3 z-50 relative">
+        <span>Try Before You Commit. Get our Discovery Sample Pack for ₹250.</span>
+        <span className="opacity-80 border-l border-black pl-2 hidden md:inline">100% Redeemable Later.</span>
+        <Link to="/samples" className="underline hover:text-white transition font-extrabold ml-2">Shop Now</Link>
+      </div>
+
       {/* --- NAVBAR --- */}
       <nav className="bg-black py-6 sticky top-0 z-50 border-b border-gray-900 shadow-xl">
         <div className="container mx-auto px-4">
