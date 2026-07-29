@@ -4,9 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-// IMPORT RUNTRANSACTION AND DOC
-import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs, runTransaction, doc } from 'firebase/firestore';
-// IMPORT EMAILJS
+import { collection, serverTimestamp, query, where, orderBy, limit, getDocs, runTransaction, doc, getDoc } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 
 const Checkout = () => {
@@ -14,25 +12,28 @@ const Checkout = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
+  // --- PROMO CODE STATES ---
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [discountApplied, setDiscountApplied] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [promoCredits, setPromoCredits] = useState(0);
+
+  // --- TOTAL CALCULATIONS ---
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shippingCost = total >= 999 ? 0 : 99;
-  const totalAmount = total + shippingCost;
+  const finalDiscount = discountApplied ? 250 : 0;
+  const totalAmount = total + shippingCost - finalDiscount;
 
   const [shippingDetails, setShippingDetails] = useState({
-    fullName: '',
-    email: currentUser?.email || '',
-    phone: '',
-    address: '',
-    city: '',
-    pincode: '',
-    state: ''
+    fullName: '', email: currentUser?.email || '', phone: '', address: '', city: '', pincode: '', state: ''
   });
 
-  // Fetch last address logic (Same as before)
+  // Fetch last address & Promo Credits
   useEffect(() => {
-    const fetchLastAddress = async () => {
+    const fetchData = async () => {
       if (currentUser) {
         try {
+          // 1. Fetch Address
           const q = query(collection(db, "orders"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"), limit(1));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
@@ -49,32 +50,54 @@ const Checkout = () => {
               }));
             }
           }
-        } catch (error) { console.log("Error fetching address", error); }
+
+          // 2. Fetch Promo Credits
+          const promoRef = doc(db, 'promo_balances', currentUser.uid);
+          const promoSnap = await getDoc(promoRef);
+          if (promoSnap.exists()) {
+            setPromoCredits(promoSnap.data().credits || 0);
+          }
+        } catch (error) { console.log("Error fetching user data", error); }
       }
     };
-    fetchLastAddress();
+    fetchData();
   }, [currentUser]);
 
   const handleChange = (e) => {
     setShippingDetails({...shippingDetails, [e.target.name]: e.target.value});
   };
 
+  const handleApplyPromo = () => {
+    setPromoError('');
+    if (promoCodeInput.toUpperCase() !== 'SOUL250') {
+      setPromoError('Invalid promo code.');
+      return;
+    }
+    if (promoCredits <= 0) {
+      setPromoError('You do not have any sample credits to redeem. Buy a sample set first!');
+      return;
+    }
+    if (total < 1000) {
+      setPromoError('Cart total must be at least ₹1000 to use this code.');
+      return;
+    }
+    setDiscountApplied(true);
+  };
+
   const handlePayment = async (e) => {
     e.preventDefault();
 
-    // --- SECURITY FIX: FORCE LOGIN BEFORE PAYMENT STARTS ---
     if (!currentUser) {
         alert("You must be logged in to place an order.");
-        navigate('/login', { state: { from: '/checkout' } }); // Redirects to login, then back to checkout
+        navigate('/login', { state: { from: '/checkout' } }); 
         return;
     }
 
     try {
-      // 1. Create Razorpay Order
       const response = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: totalAmount * 100 }),
+        body: JSON.stringify({ amount: totalAmount * 100 }), // Amount reflects the discount
       });
       const orderData = await response.json();
 
@@ -83,7 +106,6 @@ const Checkout = () => {
         return;
       }
 
-      // 2. Open Razorpay
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
         amount: orderData.amount, 
@@ -95,34 +117,42 @@ const Checkout = () => {
         
         handler: async function (response) {
           try {
-            // --- NEW: GENERATE SERIAL ID & SAVE ORDER ---
             let displayOrderId = "ERROR";
 
             await runTransaction(db, async (transaction) => {
-                // 1. Read the counter
+                // 1. Read/Update Counter
                 const counterRef = doc(db, "counters", "orderCounter");
                 const counterDoc = await transaction.get(counterRef);
+                let newCount = counterDoc.exists() ? counterDoc.data().currentSequence + 1 : 1001;
                 
-                let newCount;
+                if (!counterDoc.exists()) transaction.set(counterRef, { currentSequence: newCount });
+                else transaction.update(counterRef, { currentSequence: newCount });
 
-                if (!counterDoc.exists()) {
-                    // Auto-create counter if missing to prevent crashes
-                    newCount = 1001;
-                    transaction.set(counterRef, { currentSequence: 1001 });
-                } else {
-                    newCount = counterDoc.data().currentSequence + 1;
-                    transaction.update(counterRef, { currentSequence: newCount });
-                }
+                displayOrderId = String(newCount).padStart(4, '0'); 
 
-                displayOrderId = String(newCount).padStart(4, '0'); // Makes it 1001, 1002, etc.
+                // 2. Read/Update Promo Balances (Earning & Burning Logic)
+                const promoRef = doc(db, "promo_balances", currentUser.uid);
+                const promoDoc = await transaction.get(promoRef);
+                let currentCredits = promoDoc.exists() ? promoDoc.data().credits : 0;
 
-                // 2. Save the Order with the new ID
+                // Earning: Did they buy a Sample Set for ₹250?
+                const samplesBought = cart.filter(item => item.price === 250 && item.name.toLowerCase().includes('sample')).reduce((acc, item) => acc + item.quantity, 0);
+                
+                // Burning: Did they use the code?
+                const creditsUsed = discountApplied ? 1 : 0;
+                const newCredits = currentCredits + samplesBought - creditsUsed;
+
+                if (promoDoc.exists()) transaction.update(promoRef, { credits: newCredits });
+                else transaction.set(promoRef, { credits: newCredits });
+
+                // 3. Save the Order
                 const newOrderRef = doc(collection(db, "orders"));
                 transaction.set(newOrderRef, {
-                    userId: currentUser.uid, // This line is safe now because we checked currentUser above
+                    userId: currentUser.uid, 
                     displayId: displayOrderId, 
                     items: cart,
                     amount: totalAmount,
+                    discountApplied: discountApplied ? 250 : 0,
                     shippingDetails: shippingDetails,
                     paymentId: response.razorpay_payment_id,
                     razorpayOrderId: response.razorpay_order_id,
@@ -131,7 +161,6 @@ const Checkout = () => {
                 });
             });
 
-            // --- NEW: SEND EMAIL ---
             const emailParams = {
                 customer_name: shippingDetails.fullName,
                 order_id: displayOrderId, 
@@ -147,15 +176,10 @@ const Checkout = () => {
 
           } catch (error) {
             console.error("Error saving order:", error);
-            // Critical error: Money taken, but order failed.
-            alert(`Payment ID: ${response.razorpay_payment_id}. Order save failed. Please contact support with this ID.`);
+            alert(`Payment ID: ${response.razorpay_payment_id}. Order save failed. Please contact support.`);
           }
         },
-        prefill: {
-          name: shippingDetails.fullName,
-          email: shippingDetails.email,
-          contact: shippingDetails.phone
-        },
+        prefill: { name: shippingDetails.fullName, email: shippingDetails.email, contact: shippingDetails.phone },
         theme: { color: "#EAB308" }
       };
 
@@ -188,6 +212,7 @@ const Checkout = () => {
                  <input type="text" name="pincode" placeholder="Pincode" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.pincode} onChange={handleChange} />
                </div>
             </form>
+            
             <div className="bg-gray-900 p-6 rounded-lg border border-gray-800 h-fit">
               <h3 className="text-xl font-bold text-white mb-4">Order Summary</h3>
               <div className="space-y-3 max-h-60 overflow-y-auto mb-4 custom-scrollbar">
@@ -198,9 +223,39 @@ const Checkout = () => {
                   </div>
                 ))}
               </div>
+
+              {/* --- PROMO CODE UI --- */}
+              <div className="border-t border-gray-800 pt-4 pb-4">
+                <div className="flex gap-2 mb-2">
+                  <input 
+                    type="text" 
+                    placeholder="Promo Code" 
+                    value={promoCodeInput}
+                    onChange={(e) => setPromoCodeInput(e.target.value)}
+                    disabled={discountApplied}
+                    className="flex-1 bg-black border border-gray-700 p-2 text-sm text-white focus:border-yellow-500 outline-none uppercase"
+                  />
+                  <button 
+                    type="button"
+                    onClick={handleApplyPromo}
+                    disabled={discountApplied}
+                    className="bg-gray-800 text-white px-4 text-sm font-bold hover:bg-gray-700 disabled:opacity-50"
+                  >
+                    {discountApplied ? 'Applied' : 'Apply'}
+                  </button>
+                </div>
+                {promoError && <p className="text-red-500 text-xs">{promoError}</p>}
+                {discountApplied && <p className="text-green-500 text-xs">SOUL250 Applied! ₹250 deducted.</p>}
+              </div>
+
               <div className="border-t border-gray-800 pt-4 space-y-2">
                 <div className="flex justify-between text-gray-400"><span>Subtotal</span><span>₹{total}</span></div>
                 <div className="flex justify-between text-gray-400"><span>Shipping</span><span>{shippingCost === 0 ? "FREE" : `₹${shippingCost}`}</span></div>
+                
+                {discountApplied && (
+                  <div className="flex justify-between text-green-500"><span>Discount</span><span>-₹250</span></div>
+                )}
+
                 <div className="flex justify-between text-xl font-bold text-yellow-500 pt-2"><span>Total To Pay</span><span>₹{totalAmount}</span></div>
               </div>
               <button type="submit" form="checkout-form" className="w-full mt-6 bg-yellow-500 text-black py-4 font-bold uppercase tracking-widest hover:bg-white transition shadow-lg hover:shadow-yellow-500/20">Pay Now</button>
