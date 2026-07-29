@@ -37,8 +37,8 @@ const CustomBox = () => {
       }
     });
     
-    // Redirect directly to Checkout (Alert removed)
-    navigate('/checkout'); 
+    // Redirect instantly to Cart without showing an alert
+    navigate('/cart'); 
   };
 
   return (
@@ -58,7 +58,7 @@ const CustomBox = () => {
         {/* --- 2. STICKY HEADER & TRACKER --- */}
         <div className="text-center sticky top-16 bg-black/95 backdrop-blur z-20 py-6 border-b border-gray-800 shadow-xl">
           <h1 className="text-3xl md:text-4xl text-yellow-500 font-serif font-bold">Build Your Own Box</h1>
-          <p className="text-gray-400 mt-2 text-sm">Select 4 Miniatures (20ml) for <span className="text-white font-bold text-lg">₹1099</span></p> {/* <--- UPDATED PRICE */}
+          <p className="text-gray-400 mt-2 text-sm">Select 4 Miniatures (20ml) for <span className="text-white font-bold text-lg">₹1099</span></p>
           
           {/* TRACKER CIRCLES */}
           <div className="mt-4 flex justify-center space-x-3">
@@ -140,7 +140,7 @@ const CustomBox = () => {
                 ? 'bg-yellow-500 text-black hover:bg-white hover:scale-105' 
                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
           >
-            {selectedScents.length === 4 ? "Add Box to Cart - ₹1099" : `Select ${4 - selectedScents.length} more`} {/* <--- UPDATED PRICE */}
+            {selectedScents.length === 4 ? "Add Box to Cart - ₹1099" : `Select ${4 - selectedScents.length} more`}
           </button>
         </div>
 
