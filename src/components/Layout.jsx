@@ -17,13 +17,6 @@ const Layout = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-black text-white relative">
       
-      {/* --- NEW PROMO BANNER --- */}
-      <div className="bg-yellow-500 text-black text-center py-2 px-4 text-[10px] md:text-xs font-bold uppercase tracking-widest flex flex-col md:flex-row justify-center items-center gap-1 md:gap-3 z-50 relative">
-        <span>Try Before You Commit. Get our Discovery Sample Pack for ₹250.</span>
-        <span className="opacity-80 border-l border-black pl-2 hidden md:inline">100% Redeemable Later.</span>
-        <Link to="/samples" className="underline hover:text-white transition font-extrabold ml-2">Shop Now</Link>
-      </div>
-
       {/* --- NAVBAR --- */}
       <nav className="bg-black py-6 sticky top-0 z-50 border-b border-gray-900 shadow-xl">
         <div className="container mx-auto px-4">
@@ -71,7 +64,7 @@ const Layout = ({ children }) => {
             <Link to="/all-products" className={isActive('/all-products')}>All Products</Link>
             
             <div className="flex gap-4 mt-4 md:mt-0">
-                {/* Custom Box Button (Left) */}
+                {/* Custom Box Button */}
                 <Link 
                 to="/custom-box" 
                 className="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold text-[10px] md:text-xs"
@@ -79,7 +72,7 @@ const Layout = ({ children }) => {
                 Build Your Box (Any 4)
                 </Link>
 
-                {/* Buy Samples Button (Right - NOW VISIBLE ON MOBILE) */}
+                {/* Buy Samples Button */}
                 <Link 
                 to="/samples" 
                 className="inline-block border border-gray-600 text-gray-300 px-4 py-2 rounded text-[10px] md:text-xs font-bold uppercase tracking-widest hover:border-white hover:text-white transition"
@@ -92,6 +85,19 @@ const Layout = ({ children }) => {
 
         </div>
       </nav>
+
+      {/* --- NEW PROMINENT BANNER (BELOW MENU) --- */}
+      {/* Hide on the samples page so it doesn't look redundant */}
+      {location.pathname !== '/samples' && (
+        <Link to="/samples" className="block w-full bg-yellow-500 text-black text-center py-5 md:py-6 shadow-[0_10px_30px_rgba(234,179,8,0.15)] transition hover:bg-yellow-400 z-40 relative border-b-4 border-yellow-600">
+          <h2 className="text-2xl md:text-4xl font-serif font-bold uppercase tracking-widest">
+            Try Our Perfumes For Free
+          </h2>
+          <p className="text-xs md:text-sm font-bold mt-2 opacity-80 tracking-widest">
+            CLICK HERE TO CLAIM YOUR SAMPLE PACK
+          </p>
+        </Link>
+      )}
 
       <main className="flex-grow bg-black">
         {children}
