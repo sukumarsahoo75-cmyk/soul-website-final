@@ -2,46 +2,40 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { products } from '../data'; 
 import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // <--- NEW IMPORT
 
 const CustomBox = () => {
-  const [selectedPerfumes, setSelectedPerfumes] = useState([]);
+  const [selectedScents, setSelectedScents] = useState([]);
   const { dispatch } = useCart();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // <--- INITIALIZE NAVIGATE
   
   const toggleSelection = (product) => {
-    // 1. Prevent selecting if out of stock
-    if (product.inStock === false) return;
-
-    const isAlreadySelected = selectedPerfumes.find(item => item.id === product.id);
+    const isAlreadySelected = selectedScents.find(item => item.id === product.id);
     if (isAlreadySelected) {
-      setSelectedPerfumes(selectedPerfumes.filter(item => item.id !== product.id));
+      setSelectedScents(selectedScents.filter(item => item.id !== product.id));
     } else {
-      if (selectedPerfumes.length < 4) {
-        setSelectedPerfumes([...selectedPerfumes, product]);
+      if (selectedScents.length < 4) {
+        setSelectedScents([...selectedScents, product]);
       }
     }
   };
 
   const handleAddToCart = () => {
-    if (selectedPerfumes.length !== 4) return;
+    if (selectedScents.length !== 4) return;
     dispatch({
       type: "ADD_ITEM",
       payload: {
         id: "custom-box-set",
         name: "Discovery Box (4 x 20ml)",
-        price: 999,
+        price: 1099, 
         image: "/logo.png", 
         quantity: 1,
-        description: `Contains: ${selectedPerfumes.map(p => p.name).join(", ")}`
+        description: `Contains: ${selectedScents.map(p => p.name).join(", ")}`
       }
     });
     
-    // 1. Show Popup
-    alert("Discovery Box added to Cart!");
-    
-    // 2. Redirect to Cart
-    navigate('/cart'); // <--- CHANGED FROM '/checkout' TO '/cart'
+    // <--- REMOVED ALERT AND ADDED REDIRECT TO CHECKOUT
+    navigate('/checkout'); 
   };
 
   return (
@@ -61,15 +55,15 @@ const CustomBox = () => {
         {/* --- 2. STICKY HEADER & TRACKER --- */}
         <div className="text-center sticky top-16 bg-black/95 backdrop-blur z-20 py-6 border-b border-gray-800 shadow-xl">
           <h1 className="text-3xl md:text-4xl text-yellow-500 font-serif font-bold">Build Your Own Box</h1>
-          <p className="text-gray-400 mt-2 text-sm">Select 4 Miniatures (20ml) for <span className="text-white font-bold text-lg">₹999</span></p>
+          <p className="text-gray-400 mt-2 text-sm">Select 4 Miniatures (20ml) for <span className="text-white font-bold text-lg">₹1099</span></p>
           
           {/* TRACKER CIRCLES */}
           <div className="mt-4 flex justify-center space-x-3">
             {[...Array(4)].map((_, i) => (
               <div key={i} className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all
-                ${i < selectedPerfumes.length ? 'border-yellow-500 bg-gray-900 text-yellow-500 shadow-lg scale-110' : 'border-gray-800 border-dashed text-gray-700'}`}>
-                {i < selectedPerfumes.length ? (
-                   <span className="text-[10px] font-bold text-center leading-tight overflow-hidden px-1">{selectedPerfumes[i].name.substring(0,3)}</span>
+                ${i < selectedScents.length ? 'border-yellow-500 bg-gray-900 text-yellow-500 shadow-lg scale-110' : 'border-gray-800 border-dashed text-gray-700'}`}>
+                {i < selectedScents.length ? (
+                   <span className="text-[10px] font-bold text-center leading-tight overflow-hidden px-1">{selectedScents[i].name.substring(0,3)}</span>
                 ) : <span className="text-xl">+</span>}
               </div>
             ))}
@@ -79,40 +73,24 @@ const CustomBox = () => {
         {/* --- 3. PRODUCT GRID --- */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto px-4 pt-8">
           {products.map((product) => {
-            const isSelected = selectedPerfumes.find(item => item.id === product.id);
-            const isOutOfStock = product.inStock === false;
-            
-            // Disable if: 
-            // 1. Box is full (and this item isn't in it) 
-            // OR 
-            // 2. Item is Out of Stock
-            const isDisabled = (!isSelected && selectedPerfumes.length >= 4) || isOutOfStock;
+            const isSelected = selectedScents.find(item => item.id === product.id);
+            const isDisabled = !isSelected && selectedScents.length >= 4;
 
             return (
               <div 
                 key={product.id} 
                 onClick={() => !isDisabled && toggleSelection(product)}
-                className={`cursor-pointer p-4 rounded-lg transition-all relative group overflow-hidden
+                className={`cursor-pointer p-4 rounded-lg transition-all relative group
                   ${isSelected 
                     ? 'border-2 border-yellow-500 bg-gray-800 shadow-[0_0_15px_rgba(234,179,8,0.3)]' 
                     : 'border border-gray-800 bg-black hover:border-gray-600'}
-                  ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                  ${isOutOfStock ? 'grayscale' : ''}
+                  ${isDisabled ? 'opacity-30 cursor-not-allowed grayscale' : ''}
                 `}
               >
                 {/* "SELECTED" BADGE */}
                 {isSelected && (
                   <div className="absolute top-2 right-2 bg-yellow-500 text-black px-2 py-1 rounded text-[10px] font-bold z-10 shadow-md">
                     SELECTED
-                  </div>
-                )}
-
-                {/* --- "SOLD OUT" BADGE --- */}
-                {isOutOfStock && (
-                  <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40">
-                    <span className="bg-red-600/90 text-white px-4 py-1 text-sm font-bold uppercase tracking-widest rounded shadow-lg transform -rotate-12 border border-red-400 backdrop-blur-sm">
-                      Sold Out
-                    </span>
                   </div>
                 )}
                 
@@ -137,13 +115,13 @@ const CustomBox = () => {
         <div className="fixed bottom-0 left-0 w-full bg-black/95 backdrop-blur p-4 border-t border-gray-800 flex justify-center z-50">
           <button 
             onClick={handleAddToCart}
-            disabled={selectedPerfumes.length !== 4}
+            disabled={selectedScents.length !== 4}
             className={`px-8 py-4 rounded shadow-lg font-bold text-lg w-full max-w-md transition-all uppercase tracking-wider
-              ${selectedPerfumes.length === 4 
+              ${selectedScents.length === 4 
                 ? 'bg-yellow-500 text-black hover:bg-white hover:scale-105' 
                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
           >
-            {selectedPerfumes.length === 4 ? "Add Box to Cart - ₹999" : `Select ${4 - selectedPerfumes.length} more`}
+            {selectedScents.length === 4 ? "Checkout - ₹1099" : `Select ${4 - selectedScents.length} more`}
           </button>
         </div>
 
