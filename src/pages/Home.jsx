@@ -45,14 +45,14 @@ const Home = () => {
           <div className="relative z-20 text-center px-4 animate-fade-in-up max-w-4xl mx-auto">
             {/* SEO TAGLINE */}
             <h2 className="text-yellow-500 tracking-[0.2em] text-xs md:text-sm uppercase mb-4 font-bold">
-              India's Premier Inspired Fragrance House
+              Finest Apparel Fragrance
             </h2>
             <h1 className="text-5xl md:text-8xl font-serif text-white mb-6 leading-tight">
               Wear Your <span className="italic text-yellow-500">Soul</span>
             </h1>
             <p className="text-gray-200 text-lg md:text-xl mb-10 font-light max-w-2xl mx-auto">
-              Experience the art of luxury with our handcrafted <strong>Extrait de Parfums</strong>. 
-              Long-lasting, premium scents designed to leave a mark.
+              Experience the art of Apparel with our handcrafted <strong>Extrait de Parfums</strong>. 
+              Long-lasting, premium Perfumes designed to leave a mark.
             </p>
             <Link to="/all-products" className="inline-block bg-white text-black px-10 py-4 hover:bg-yellow-500 hover:text-black transition uppercase tracking-widest text-sm font-bold shadow-lg shadow-white/10">
               Shop The Collection
@@ -103,8 +103,8 @@ const Home = () => {
               <p className="text-yellow-500 uppercase tracking-widest text-xs mb-4">The Ultimate Gift</p>
               <h2 className="text-4xl md:text-6xl font-serif text-white mb-6">Create Your Signature Box</h2>
               <p className="text-gray-200 text-lg md:text-xl mb-10 leading-relaxed max-w-2xl mx-auto">
-                Why choose one when you can have four? Curate a <strong>Discovery Set</strong> with 4 of your favorite 20ml luxury scents. 
-                Perfect for gifting or finding your new signature scent.
+                Why choose one when you can have four? Curate a <strong>Discovery Set</strong> with 4 of your favorite 20ml Apparel Perfumes. 
+                Perfect for gifting or finding your new signature Perfume.
               </p>
               <Link 
                   to="/custom-box" 
@@ -120,18 +120,18 @@ const Home = () => {
           <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="p-6">
               <div className="text-yellow-500 text-4xl mb-4">✦</div>
-              <h4 className="text-xl font-serif text-white mb-2">Extrait de Parfum</h4>
+              <h4 className="text-xl font-serif text-white mb-2">Pure Apparel Extract</h4>
               <p className="text-gray-400 text-sm">Highest oil concentration (30%) ensuring your fragrance lasts 12+ hours.</p>
             </div>
             <div className="p-6 border-l-0 md:border-l border-r-0 md:border-r border-gray-800">
               <div className="text-yellow-500 text-4xl mb-4">🇮🇳</div>
-              <h4 className="text-xl font-serif text-white mb-2">Handcrafted in Odisha</h4>
+              <h4 className="text-xl font-serif text-white mb-2">Handcrafted in India</h4>
               <p className="text-gray-400 text-sm">Proudly Indian. Premium ingredients blended to perfection in Bhubaneswar.</p>
             </div>
             <div className="p-6">
               <div className="text-yellow-500 text-4xl mb-4">⚖️</div>
-              <h4 className="text-xl font-serif text-white mb-2">Fair Price Luxury</h4>
-              <p className="text-gray-400 text-sm">Designer quality scents at a fraction of the price. No hidden markups.</p>
+              <h4 className="text-xl font-serif text-white mb-2">Fair Price Apparel</h4>
+              <p className="text-gray-400 text-sm">Designer quality Perfumes at a fraction of the price. No hidden markups.</p>
             </div>
           </div>
         </div>

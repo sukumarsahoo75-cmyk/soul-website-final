@@ -9,7 +9,7 @@ const GiftSets = () => {
   const giftSets = [
     {
       id: 5,
-      name: "Luxury Perfume Gift Set - 4 x 20ml",
+      name: "Apparel Perfume Gift Set - 4 x 20ml",
       description: "Experience our signature collection with this exquisite gift set featuring four distinct fragrances. Perfect for gifting or personal discovery.",
       price: 699,
       images: ["/product5.jpg"],

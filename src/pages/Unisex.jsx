@@ -12,7 +12,7 @@ const Unisex = () => {
       <div className="bg-gray-900 min-h-screen py-10 px-4">
         <div className="text-center mb-10">
           <h1 className="text-4xl text-gold-500 mb-2 font-serif">Unisex Collection</h1>
-          <p className="text-gray-400">Scents that transcend gender boundaries.</p>
+          <p className="text-gray-400">Perfumes that transcend gender boundaries.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">

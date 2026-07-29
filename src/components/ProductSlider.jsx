@@ -22,7 +22,7 @@ const ProductSlider = ({ cartItems, setCartItems }) => {
   const products = [
     {
       id: 5,
-      name: "Luxury Perfume Gift Set - 4 x 20ml",
+      name: "Apparel Perfume Gift Set - 4 x 20ml",
       description: "Experience our signature collection with this exquisite gift set featuring four distinct fragrances.",
       price: 4999,
       images: ["/images/product5.jpg"],

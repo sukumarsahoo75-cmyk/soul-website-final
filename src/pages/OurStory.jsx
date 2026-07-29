@@ -10,7 +10,7 @@ const OurStory = () => {
         {/* HERO HEADER */}
         <div className="container mx-auto max-w-4xl text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-serif text-yellow-500 mb-6 tracking-wide">
-            The Soul of Scent
+            The Soul of Perfume
           </h1>
           <div className="w-24 h-1 bg-yellow-500 mx-auto opacity-80"></div>
         </div>
@@ -21,7 +21,7 @@ const OurStory = () => {
           {/* Section 1: The Beginning */}
           <section>
             <p className="first-letter:text-5xl first-letter:text-yellow-500 first-letter:font-serif first-letter:float-left first-letter:mr-3">
-              It began not as a business, but as an obsession. For our founder, the world was always experienced through fragrance. From the earliest memories, there was a deep, intuitive connection to the power of scent—how a single note could unlock a memory, shift a mood, or define a moment.
+              It began not as a business, but as an obsession. For our founder, the world was always experienced through fragrance. From the earliest memories, there was a deep, intuitive connection to the power of Perfume—how a single note could unlock a memory, shift a mood, or define a moment.
             </p>
           </section>
 
@@ -38,18 +38,18 @@ const OurStory = () => {
           {/* Section 3: The Craft (UPDATED) */}
           <section>
             <p className="mb-6">
-              Today, we specialize in crafting luxury-inspired perfumes that make opulence accessible. 
+              Today, we specialize in crafting Apparel-inspired perfumes that make opulence accessible. 
               <span className="text-white font-bold block mt-4">
-                We import high-quality oils and handcraft all our perfumes in small batches, using strictly glass equipment to preserve the purity and integrity of every scent.
+                We import high-quality oils and handcraft all our perfumes in small batches, using strictly glass equipment to preserve the purity and integrity of every Perfume.
               </span>
             </p>
             
             <p className="text-yellow-100 italic font-serif text-xl border-l-4 border-yellow-500 pl-6 py-2 mt-8">
-              "We are on the verge of a new era—creating our own niche fragrances and fusion scents that blend the richness of Indian heritage with modern global elegance."
+              "We are on the verge of a new era—creating our own niche fragrances and fusion Perfumes that blend the richness of Indian heritage with modern global elegance."
             </p>
             
             <p className="mt-6">
-              This is just the beginning of our olfactory journey. We invite you to find the scent that speaks to your soul.
+              This is just the beginning of our olfactory journey. We invite you to find the Perfume that speaks to your soul.
             </p>
           </section>
 

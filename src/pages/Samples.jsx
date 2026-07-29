@@ -13,23 +13,23 @@ const Samples = () => {
   const BOX_PRICE = 250;
   const REQUIRED_COUNT = 10;
 
-  const [selectedScents, setSelectedScents] = useState([]);
+  const [selectedPerfumes, setSelectedPerfumes] = useState([]);
 
   // Helper to check if box is full
-  const isFull = selectedScents.length === REQUIRED_COUNT;
-  const remaining = REQUIRED_COUNT - selectedScents.length;
+  const isFull = selectedPerfumes.length === REQUIRED_COUNT;
+  const remaining = REQUIRED_COUNT - selectedPerfumes.length;
 
   // Toggle Selection Logic
-  const toggleScent = (product) => {
-    const isSelected = selectedScents.find(p => p.id === product.id);
+  const togglePerfume = (product) => {
+    const isSelected = selectedPerfumes.find(p => p.id === product.id);
 
     if (isSelected) {
       // Remove if already selected
-      setSelectedScents(selectedScents.filter(p => p.id !== product.id));
+      setSelectedPerfumes(selectedPerfumes.filter(p => p.id !== product.id));
     } else {
       // Add if not full
-      if (selectedScents.length < REQUIRED_COUNT) {
-        setSelectedScents([...selectedScents, product]);
+      if (selectedPerfumes.length < REQUIRED_COUNT) {
+        setSelectedPerfumes([...selectedPerfumes, product]);
       } else {
         alert(`You can only select ${REQUIRED_COUNT} testers for this pack!`);
       }
@@ -37,7 +37,7 @@ const Samples = () => {
   };
 
   const handleAddToCart = () => {
-    if (selectedScents.length !== REQUIRED_COUNT) {
+    if (selectedPerfumes.length !== REQUIRED_COUNT) {
       return; 
     }
 
@@ -54,7 +54,7 @@ const Samples = () => {
           category: "Sample Set",
           selectedSize: "2ml Vial",
           inStock: true,
-          description: `Selection: ${selectedScents.map(s => s.name).join(", ")}`
+          description: `Selection: ${selectedPerfumes.map(s => s.name).join(", ")}`
         }
       });
       
@@ -81,7 +81,7 @@ const Samples = () => {
           <div className="relative z-10 text-center px-4">
             <h1 className="text-4xl md:text-6xl font-serif text-yellow-500 mb-4">Discovery Sample Pack</h1>
             <p className="text-gray-300 text-lg">
-              Try before you buy. Select <strong>10 scents</strong> (2ml each) for just <strong>₹{BOX_PRICE}</strong>.
+              Try before you buy. Select <strong>10 Perfumes</strong> (2ml each) for just <strong>₹{BOX_PRICE}</strong>.
             </p>
           </div>
         </div>
@@ -92,14 +92,14 @@ const Samples = () => {
              <div className="flex flex-col">
                <span className="text-gray-400 text-[10px] uppercase tracking-widest">Your Box</span>
                <span className={`text-xl font-bold ${isFull ? 'text-green-400' : 'text-yellow-500'}`}>
-                 {selectedScents.length} / {REQUIRED_COUNT} Selected
+                 {selectedPerfumes.length} / {REQUIRED_COUNT} Selected
                </span>
              </div>
              
              {/* CLEAR BUTTON */}
-             {selectedScents.length > 0 && (
+             {selectedPerfumes.length > 0 && (
                <button 
-                 onClick={() => setSelectedScents([])}
+                 onClick={() => setSelectedPerfumes([])}
                  className="text-xs text-red-500 underline hover:text-red-400"
                >
                  Clear All
@@ -112,7 +112,7 @@ const Samples = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {products.map((product) => {
-              const isSelected = selectedScents.find(s => s.id === product.id);
+              const isSelected = selectedPerfumes.find(s => s.id === product.id);
               
               // FADE LOGIC
               const fadeClass = (isFull && !isSelected) ? "opacity-30 pointer-events-none grayscale" : "opacity-100";
@@ -120,7 +120,7 @@ const Samples = () => {
               return (
                 <div 
                   key={product.id} 
-                  onClick={() => product.inStock && toggleScent(product)}
+                  onClick={() => product.inStock && togglePerfume(product)}
                   className={`relative cursor-pointer rounded-lg overflow-hidden border transition-all duration-300 group ${fadeClass}
                     ${isSelected ? 'border-yellow-500 ring-2 ring-yellow-500/50 bg-gray-900' : 'border-gray-800 hover:border-gray-600'}
                     ${!product.inStock ? 'opacity-50 cursor-not-allowed' : ''}

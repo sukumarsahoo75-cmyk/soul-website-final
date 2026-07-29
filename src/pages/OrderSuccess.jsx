@@ -16,7 +16,7 @@ const OrderSuccess = () => {
           
           <h1 className="text-3xl font-serif text-yellow-500 mb-4">Order Confirmed!</h1>
           <p className="text-gray-300 mb-8">
-            Thank you for choosing Soul Fragrance. Your journey to luxury begins now.
+            Thank you for choosing Soul Fragrance. Your journey to Apparel begins now.
           </p>
 
           <div className="bg-black p-4 rounded border border-gray-800 mb-8">

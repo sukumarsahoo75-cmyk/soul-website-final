@@ -34,7 +34,7 @@ const HeroSection = () => {
         } delay-700 relative z-10 mx-4`}
       >
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gold-500 tracking-wide drop-shadow-lg hero-glow">
-          Discover Your Signature Scent
+          Discover Your Signature Perfume
         </h1>
         <p className="mt-4 text-base md:text-lg text-gray-300 max-w-xl mx-auto font-sans">
           Premium, long-lasting perfumes designed to evoke emotions and

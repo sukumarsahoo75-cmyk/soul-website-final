@@ -89,7 +89,7 @@ const Checkout = () => {
         amount: orderData.amount, 
         currency: orderData.currency,
         name: "Soul Fragrance",
-        description: "Luxury Perfume Order",
+        description: "Apparel Perfume Order",
         image: "https://soulfragrance.in/logo.png",
         order_id: orderData.id, 
         

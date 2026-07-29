@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 const CustomBox = () => {
-  const [selectedScents, setSelectedScents] = useState([]);
+  const [selectedPerfumes, setSelectedPerfumes] = useState([]);
   const { dispatch } = useCart();
   const navigate = useNavigate();
   
@@ -13,18 +13,18 @@ const CustomBox = () => {
     // 1. Prevent selecting if out of stock
     if (product.inStock === false) return;
 
-    const isAlreadySelected = selectedScents.find(item => item.id === product.id);
+    const isAlreadySelected = selectedPerfumes.find(item => item.id === product.id);
     if (isAlreadySelected) {
-      setSelectedScents(selectedScents.filter(item => item.id !== product.id));
+      setSelectedPerfumes(selectedPerfumes.filter(item => item.id !== product.id));
     } else {
-      if (selectedScents.length < 4) {
-        setSelectedScents([...selectedScents, product]);
+      if (selectedPerfumes.length < 4) {
+        setSelectedPerfumes([...selectedPerfumes, product]);
       }
     }
   };
 
   const handleAddToCart = () => {
-    if (selectedScents.length !== 4) return;
+    if (selectedPerfumes.length !== 4) return;
     dispatch({
       type: "ADD_ITEM",
       payload: {
@@ -33,7 +33,7 @@ const CustomBox = () => {
         price: 999,
         image: "/logo.png", 
         quantity: 1,
-        description: `Contains: ${selectedScents.map(p => p.name).join(", ")}`
+        description: `Contains: ${selectedPerfumes.map(p => p.name).join(", ")}`
       }
     });
     
@@ -67,9 +67,9 @@ const CustomBox = () => {
           <div className="mt-4 flex justify-center space-x-3">
             {[...Array(4)].map((_, i) => (
               <div key={i} className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all
-                ${i < selectedScents.length ? 'border-yellow-500 bg-gray-900 text-yellow-500 shadow-lg scale-110' : 'border-gray-800 border-dashed text-gray-700'}`}>
-                {i < selectedScents.length ? (
-                   <span className="text-[10px] font-bold text-center leading-tight overflow-hidden px-1">{selectedScents[i].name.substring(0,3)}</span>
+                ${i < selectedPerfumes.length ? 'border-yellow-500 bg-gray-900 text-yellow-500 shadow-lg scale-110' : 'border-gray-800 border-dashed text-gray-700'}`}>
+                {i < selectedPerfumes.length ? (
+                   <span className="text-[10px] font-bold text-center leading-tight overflow-hidden px-1">{selectedPerfumes[i].name.substring(0,3)}</span>
                 ) : <span className="text-xl">+</span>}
               </div>
             ))}
@@ -79,14 +79,14 @@ const CustomBox = () => {
         {/* --- 3. PRODUCT GRID --- */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto px-4 pt-8">
           {products.map((product) => {
-            const isSelected = selectedScents.find(item => item.id === product.id);
+            const isSelected = selectedPerfumes.find(item => item.id === product.id);
             const isOutOfStock = product.inStock === false;
             
             // Disable if: 
             // 1. Box is full (and this item isn't in it) 
             // OR 
             // 2. Item is Out of Stock
-            const isDisabled = (!isSelected && selectedScents.length >= 4) || isOutOfStock;
+            const isDisabled = (!isSelected && selectedPerfumes.length >= 4) || isOutOfStock;
 
             return (
               <div 
@@ -137,13 +137,13 @@ const CustomBox = () => {
         <div className="fixed bottom-0 left-0 w-full bg-black/95 backdrop-blur p-4 border-t border-gray-800 flex justify-center z-50">
           <button 
             onClick={handleAddToCart}
-            disabled={selectedScents.length !== 4}
+            disabled={selectedPerfumes.length !== 4}
             className={`px-8 py-4 rounded shadow-lg font-bold text-lg w-full max-w-md transition-all uppercase tracking-wider
-              ${selectedScents.length === 4 
+              ${selectedPerfumes.length === 4 
                 ? 'bg-yellow-500 text-black hover:bg-white hover:scale-105' 
                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
           >
-            {selectedScents.length === 4 ? "Add Box to Cart - ₹999" : `Select ${4 - selectedScents.length} more`}
+            {selectedPerfumes.length === 4 ? "Add Box to Cart - ₹999" : `Select ${4 - selectedPerfumes.length} more`}
           </button>
         </div>
 
