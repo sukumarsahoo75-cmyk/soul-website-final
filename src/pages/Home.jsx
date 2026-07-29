@@ -51,8 +51,8 @@ const Home = () => {
               Wear Your <span className="italic text-yellow-500">Soul</span>
             </h1>
             <p className="text-gray-200 text-lg md:text-xl mb-10 font-light max-w-2xl mx-auto">
-              Experience the art of Apparel with our handcrafted <strong>Extrait de Parfums</strong>. 
-              Long-lasting, premium Perfumes designed to leave a mark.
+              Experience the art of fragrance with our handcrafted long lasting premium <strong>apparel perfume</strong>. 
+              
             </p>
             <Link to="/all-products" className="inline-block bg-white text-black px-10 py-4 hover:bg-yellow-500 hover:text-black transition uppercase tracking-widest text-sm font-bold shadow-lg shadow-white/10">
               Shop The Collection
