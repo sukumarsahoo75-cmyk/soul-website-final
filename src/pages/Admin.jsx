@@ -111,8 +111,9 @@ const Admin = () => {
                   {orders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-800/50 transition">
                       
+                      {/* --- UPDATED TO PULL displayId --- */}
                       <td className="p-4 font-mono text-yellow-500">
-                        #{order.orderNumber || order.id.slice(0,5)}
+                        #{order.displayId || order.orderNumber || order.id.slice(0,5)}
                       </td>
                       
                       <td className="p-4">
@@ -130,7 +131,6 @@ const Admin = () => {
                              <span className="block text-white">
                                {item.quantity}x {item.name}
                              </span>
-                             {/* --- THIS IS THE NEW PART THAT SHOWS THE 4 SCENTS --- */}
                              {item.description && (
                                <span className="block text-xs text-gray-500 italic mt-0.5">
                                  {item.description}
