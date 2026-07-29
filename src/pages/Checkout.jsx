@@ -12,13 +12,11 @@ const Checkout = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  // --- PROMO CODE STATES ---
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
   const [promoError, setPromoError] = useState('');
   const [promoCredits, setPromoCredits] = useState(0);
 
-  // --- TOTAL CALCULATIONS ---
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shippingCost = total >= 999 ? 0 : 99;
   const finalDiscount = discountApplied ? 250 : 0;
@@ -28,12 +26,10 @@ const Checkout = () => {
     fullName: '', email: currentUser?.email || '', phone: '', address: '', city: '', pincode: '', state: ''
   });
 
-  // Fetch last address & Promo Credits
   useEffect(() => {
     const fetchData = async () => {
       if (currentUser) {
         try {
-          // 1. Fetch Address
           const q = query(collection(db, "orders"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"), limit(1));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
@@ -51,7 +47,6 @@ const Checkout = () => {
             }
           }
 
-          // 2. Fetch Promo Credits
           const promoRef = doc(db, 'promo_balances', currentUser.uid);
           const promoSnap = await getDoc(promoRef);
           if (promoSnap.exists()) {
@@ -97,7 +92,7 @@ const Checkout = () => {
       const response = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: totalAmount * 100 }), // Amount reflects the discount
+        body: JSON.stringify({ amount: totalAmount * 100 }), 
       });
       const orderData = await response.json();
 
@@ -120,32 +115,31 @@ const Checkout = () => {
             let displayOrderId = "ERROR";
 
             await runTransaction(db, async (transaction) => {
-                // 1. Read/Update Counter
+                // --- 1. ALL FIRESTORE READS MUST HAPPEN FIRST ---
                 const counterRef = doc(db, "counters", "orderCounter");
                 const counterDoc = await transaction.get(counterRef);
-                let newCount = counterDoc.exists() ? counterDoc.data().currentSequence + 1 : 1001;
                 
-                if (!counterDoc.exists()) transaction.set(counterRef, { currentSequence: newCount });
-                else transaction.update(counterRef, { currentSequence: newCount });
-
-                displayOrderId = String(newCount).padStart(4, '0'); 
-
-                // 2. Read/Update Promo Balances (Earning & Burning Logic)
                 const promoRef = doc(db, "promo_balances", currentUser.uid);
                 const promoDoc = await transaction.get(promoRef);
-                let currentCredits = promoDoc.exists() ? promoDoc.data().credits : 0;
 
-                // Earning: Did they buy a Sample Set for ₹250?
-                const samplesBought = cart.filter(item => item.price === 250 && item.name.toLowerCase().includes('sample')).reduce((acc, item) => acc + item.quantity, 0);
+                // --- 2. ALL FIRESTORE WRITES MUST HAPPEN SECOND ---
                 
-                // Burning: Did they use the code?
+                // Write A: Counter
+                let newCount = counterDoc.exists() ? counterDoc.data().currentSequence + 1 : 1001;
+                if (!counterDoc.exists()) transaction.set(counterRef, { currentSequence: newCount });
+                else transaction.update(counterRef, { currentSequence: newCount });
+                displayOrderId = String(newCount).padStart(4, '0'); 
+
+                // Write B: Promo Balances
+                let currentCredits = promoDoc.exists() ? promoDoc.data().credits : 0;
+                const samplesBought = cart.filter(item => item.price === 250 && item.name.toLowerCase().includes('sample')).reduce((acc, item) => acc + item.quantity, 0);
                 const creditsUsed = discountApplied ? 1 : 0;
                 const newCredits = currentCredits + samplesBought - creditsUsed;
 
                 if (promoDoc.exists()) transaction.update(promoRef, { credits: newCredits });
                 else transaction.set(promoRef, { credits: newCredits });
 
-                // 3. Save the Order
+                // Write C: Save the Order
                 const newOrderRef = doc(collection(db, "orders"));
                 transaction.set(newOrderRef, {
                     userId: currentUser.uid, 
@@ -204,8 +198,6 @@ const Checkout = () => {
                
                <div className="grid grid-cols-2 gap-4">
                   <input type="email" name="email" placeholder="Email" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.email} onChange={handleChange} />
-                  
-                  {/* ADDED STRICT PHONE VALIDATION */}
                   <input 
                     type="tel" 
                     name="phone" 
@@ -225,8 +217,6 @@ const Checkout = () => {
                <div className="grid grid-cols-3 gap-2">
                  <input type="text" name="city" placeholder="City" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.city} onChange={handleChange} />
                  <input type="text" name="state" placeholder="State" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.state} onChange={handleChange} />
-                 
-                 {/* ADDED STRICT PINCODE VALIDATION */}
                  <input 
                    type="text" 
                    name="pincode" 
@@ -253,7 +243,6 @@ const Checkout = () => {
                 ))}
               </div>
 
-              {/* --- PROMO CODE UI --- */}
               <div className="border-t border-gray-800 pt-4 pb-4">
                 <div className="flex gap-2 mb-2">
                   <input 
