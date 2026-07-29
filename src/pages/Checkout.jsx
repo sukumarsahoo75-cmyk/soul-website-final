@@ -201,15 +201,44 @@ const Checkout = () => {
             <form id="checkout-form" onSubmit={handlePayment} className="space-y-4">
                <h3 className="text-xl font-bold border-b border-gray-800 pb-2 mb-4">Shipping Details</h3>
                <input type="text" name="fullName" placeholder="Full Name" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.fullName} onChange={handleChange} />
+               
                <div className="grid grid-cols-2 gap-4">
                   <input type="email" name="email" placeholder="Email" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.email} onChange={handleChange} />
-                  <input type="tel" name="phone" placeholder="Phone Number" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.phone} onChange={handleChange} />
+                  
+                  {/* ADDED STRICT PHONE VALIDATION */}
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    placeholder="10-Digit Phone" 
+                    required 
+                    pattern="[0-9]{10}"
+                    maxLength="10"
+                    title="Please enter a valid 10-digit mobile number"
+                    className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" 
+                    value={shippingDetails.phone} 
+                    onChange={handleChange} 
+                  />
                </div>
+               
                <textarea name="address" placeholder="Full Address" required rows="3" className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.address} onChange={handleChange}></textarea>
+               
                <div className="grid grid-cols-3 gap-2">
                  <input type="text" name="city" placeholder="City" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.city} onChange={handleChange} />
                  <input type="text" name="state" placeholder="State" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.state} onChange={handleChange} />
-                 <input type="text" name="pincode" placeholder="Pincode" required className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" value={shippingDetails.pincode} onChange={handleChange} />
+                 
+                 {/* ADDED STRICT PINCODE VALIDATION */}
+                 <input 
+                   type="text" 
+                   name="pincode" 
+                   placeholder="6-Digit Pincode" 
+                   required 
+                   pattern="[0-9]{6}"
+                   maxLength="6"
+                   title="Please enter a valid 6-digit postal code"
+                   className="w-full bg-gray-900 border border-gray-800 p-3 rounded text-white focus:border-yellow-500 outline-none" 
+                   value={shippingDetails.pincode} 
+                   onChange={handleChange} 
+                 />
                </div>
             </form>
             
