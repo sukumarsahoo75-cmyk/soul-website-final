@@ -110,7 +110,7 @@ const Home = () => {
                   to="/custom-box" 
                   className="inline-block bg-yellow-500 text-black px-12 py-4 font-bold uppercase tracking-[0.2em] text-sm md:text-base hover:bg-white transition shadow-lg hover:shadow-yellow-500/20"
                 >
-                  Build Your Box - ₹999
+                  Build Your Box - ₹1099
               </Link>
            </div>
         </div>
