@@ -69,7 +69,7 @@ const Layout = ({ children }) => {
                 to="/custom-box" 
                 className="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold text-[10px] md:text-xs"
                 >
-                Make Your Own Gift Set
+                Build Your Box (Any 4)
                 </Link>
 
                 {/* Buy Samples Button (Right - NOW VISIBLE ON MOBILE) */}
