@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { products } from '../data'; 
 import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom'; // <--- NEW IMPORT
+import { useNavigate } from 'react-router-dom';
 
 const CustomBox = () => {
   const [selectedScents, setSelectedScents] = useState([]);
   const { dispatch } = useCart();
-  const navigate = useNavigate(); // <--- INITIALIZE NAVIGATE
+  const navigate = useNavigate();
   
   const toggleSelection = (product) => {
+    // 1. Prevent selecting if out of stock
+    if (product.inStock === false) return;
+
     const isAlreadySelected = selectedScents.find(item => item.id === product.id);
     if (isAlreadySelected) {
       setSelectedScents(selectedScents.filter(item => item.id !== product.id));
@@ -27,14 +30,14 @@ const CustomBox = () => {
       payload: {
         id: "custom-box-set",
         name: "Discovery Box (4 x 20ml)",
-        price: 1099, 
+        price: 1099, // <--- UPDATED PRICE
         image: "/logo.png", 
         quantity: 1,
         description: `Contains: ${selectedScents.map(p => p.name).join(", ")}`
       }
     });
     
-    // <--- REMOVED ALERT AND ADDED REDIRECT TO CHECKOUT
+    // Redirect directly to Checkout (Alert removed)
     navigate('/checkout'); 
   };
 
@@ -55,7 +58,7 @@ const CustomBox = () => {
         {/* --- 2. STICKY HEADER & TRACKER --- */}
         <div className="text-center sticky top-16 bg-black/95 backdrop-blur z-20 py-6 border-b border-gray-800 shadow-xl">
           <h1 className="text-3xl md:text-4xl text-yellow-500 font-serif font-bold">Build Your Own Box</h1>
-          <p className="text-gray-400 mt-2 text-sm">Select 4 Miniatures (20ml) for <span className="text-white font-bold text-lg">₹1099</span></p>
+          <p className="text-gray-400 mt-2 text-sm">Select 4 Miniatures (20ml) for <span className="text-white font-bold text-lg">₹1099</span></p> {/* <--- UPDATED PRICE */}
           
           {/* TRACKER CIRCLES */}
           <div className="mt-4 flex justify-center space-x-3">
@@ -74,23 +77,39 @@ const CustomBox = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto px-4 pt-8">
           {products.map((product) => {
             const isSelected = selectedScents.find(item => item.id === product.id);
-            const isDisabled = !isSelected && selectedScents.length >= 4;
+            const isOutOfStock = product.inStock === false;
+            
+            // Disable if: 
+            // 1. Box is full (and this item isn't in it) 
+            // OR 
+            // 2. Item is Out of Stock
+            const isDisabled = (!isSelected && selectedScents.length >= 4) || isOutOfStock;
 
             return (
               <div 
                 key={product.id} 
                 onClick={() => !isDisabled && toggleSelection(product)}
-                className={`cursor-pointer p-4 rounded-lg transition-all relative group
+                className={`cursor-pointer p-4 rounded-lg transition-all relative group overflow-hidden
                   ${isSelected 
                     ? 'border-2 border-yellow-500 bg-gray-800 shadow-[0_0_15px_rgba(234,179,8,0.3)]' 
                     : 'border border-gray-800 bg-black hover:border-gray-600'}
-                  ${isDisabled ? 'opacity-30 cursor-not-allowed grayscale' : ''}
+                  ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${isOutOfStock ? 'grayscale' : ''}
                 `}
               >
                 {/* "SELECTED" BADGE */}
                 {isSelected && (
                   <div className="absolute top-2 right-2 bg-yellow-500 text-black px-2 py-1 rounded text-[10px] font-bold z-10 shadow-md">
                     SELECTED
+                  </div>
+                )}
+
+                {/* --- "SOLD OUT" BADGE --- */}
+                {isOutOfStock && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40">
+                    <span className="bg-red-600/90 text-white px-4 py-1 text-sm font-bold uppercase tracking-widest rounded shadow-lg transform -rotate-12 border border-red-400 backdrop-blur-sm">
+                      Sold Out
+                    </span>
                   </div>
                 )}
                 
@@ -121,7 +140,7 @@ const CustomBox = () => {
                 ? 'bg-yellow-500 text-black hover:bg-white hover:scale-105' 
                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
           >
-            {selectedScents.length === 4 ? "Checkout - ₹1099" : `Select ${4 - selectedScents.length} more`}
+            {selectedScents.length === 4 ? "Add Box to Cart - ₹1099" : `Select ${4 - selectedScents.length} more`} {/* <--- UPDATED PRICE */}
           </button>
         </div>
 
